@@ -1,15 +1,15 @@
 # Meetings notes
 
 ## Meeting 1.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE: 02/02/2023**
+* **ASSISTANT: Mika Oja**
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+Revision and grading of te deliverable for Deadline 1.
+
 
 ### Action points
-*List here the actions points discussed with assistants*
-
+- Work towards Deadline 2
 
 
 
