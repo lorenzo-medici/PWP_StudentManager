@@ -1,4 +1,5 @@
 import datetime
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event, CheckConstraint
@@ -6,7 +7,7 @@ from sqlalchemy.future import Engine
 from sqlalchemy.orm import validates
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///StudentManager.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(app.root_path, "StudentManager.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -105,7 +106,7 @@ class Course(db.Model):
     course_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     teacher = db.Column(db.String(255), nullable=False)
-    code = db.Column(db.Integer, nullable=False, unique=True)
+    code = db.Column(db.String(12), nullable=False, unique=True)
     ects = db.Column(db.Integer, CheckConstraint('ects > 0'), nullable=False)
 
     # RELATIONSHIPS
