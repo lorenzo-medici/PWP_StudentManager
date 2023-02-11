@@ -1,23 +1,19 @@
 import datetime
 import os
+import click
+from flask.cli import with_appcontext
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event, CheckConstraint
 from sqlalchemy.future import Engine
 from sqlalchemy.orm import validates
-
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(app.root_path, "StudentManager.db")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
-
+from app import db
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
-
 
 class Assessment(db.Model):
     """A class that represents an assessment. Contains references to the student and the course it is related to.
@@ -32,7 +28,7 @@ class Assessment(db.Model):
 
     course_id = db.Column(db.Integer, db.ForeignKey("course.course_id", ondelete="CASCADE"), primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.student_id", ondelete="CASCADE"), primary_key=True)
-    grade = db.Column(db.Integer, CheckConstraint('grade IN (0, 5)'), nullable=False)
+    grade = db.Column(db.Integer, CheckConstraint('grade IN (0,1,2,3,4,5)'), nullable=False)
     date = db.Column(db.Date, nullable=False)
 
     # VALIDATORS
@@ -128,3 +124,107 @@ class Course(db.Model):
     #   info at: https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#combining-association-object-with-many-to-many-access-patterns
 
     students = db.relationship("Student", secondary="assessments", back_populates="courses", viewonly=True)
+
+
+@click.command("init-db")
+@with_appcontext
+def init_db():
+
+    db.create_all()
+
+@click.command("testgen")
+@with_appcontext
+def generate_test_data():
+
+
+    s1 = Student(
+        first_name='Draco',
+        last_name='Malfoy',
+        date_of_birth=datetime.date.fromisoformat('1980-06-05'),
+        ssn='050680X4123'
+    )
+
+    s2 = Student(
+        first_name='Harry',
+        last_name='Potter',
+        date_of_birth=datetime.date.fromisoformat('1980-07-31'),
+        ssn='310780X8245'
+    )
+
+    s3 = Student(
+        first_name='Hermione',
+        last_name='Granger',
+        date_of_birth=datetime.date.fromisoformat('1979-09-19'),
+        ssn='190979X1095'
+    )
+
+    c1 = Course(
+        title='Transfiguration',
+        teacher='Minerva Mcgonagall',
+        code='004723',
+        ects=5
+    )
+
+    c2 = Course(
+        title='Defence Against the Dark Arts',
+        teacher='Professur Severus Snape',
+        code='006031',
+        ects=8
+    )
+    
+    a_s1_c1 = Assessment(
+        student=s1,
+        course=c1,
+        grade=5,
+        date=datetime.date.fromisoformat('1993-02-08')
+    )
+
+    a_s1_c2 = Assessment(
+        student=s1,
+        course=c2,
+        grade=4,
+        date=datetime.date.fromisoformat('1993-02-17')
+    )
+
+    a_s2_c1 = Assessment(
+        student=s2,
+        course=c1,
+        grade=3,
+        date=datetime.date.fromisoformat('1993-02-08')
+    )
+
+    a_s2_c2 = Assessment(
+        student=s2,
+        course=c2,
+        grade=4,
+        date=datetime.date.fromisoformat('1993-02-17')
+    )
+
+    a_s3_c1 = Assessment(
+        student=s3,
+        course=c1,
+        grade=5,
+        date=datetime.date.fromisoformat('1993-02-08')
+    )
+
+    a_s3_c2 = Assessment(
+        student=s3,
+        course=c2,
+        grade=5,
+        date=datetime.date.fromisoformat('1993-02-17')
+    )
+
+    db.session.add(s1)
+    db.session.add(s2)
+    db.session.add(s3)
+
+    db.session.add(c1)
+    db.session.add(c2)
+
+    db.session.add(a_s1_c2)
+    db.session.add(a_s2_c1)
+    db.session.add(a_s2_c2)
+    db.session.add(a_s3_c1)
+    db.session.add(a_s3_c2)
+
+    db.session.commit()
