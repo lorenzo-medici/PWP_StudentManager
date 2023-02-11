@@ -20,6 +20,9 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 class Assessment(db.Model):
+    """A class that represents an assessment. Contains references to the student and the course it is related to.
+    Additionally, stores the grade accomplished and the date of the assessment. The grade must be between 0 (Fail) and 5.
+    The date must be at most the current day-"""
 
     # COLUMNS
     #
@@ -54,6 +57,8 @@ class Assessment(db.Model):
 
 
 class Student(db.Model):
+    """A class that represents a student. Contains personal information, as well as the assessments a student has, and all the courses they have assessments for.
+    The date of birth has to be in the past, and the Social Security Number has to be valid for the given date, as well as unique."""
 
     # COLUMNS
     #
@@ -79,6 +84,7 @@ class Student(db.Model):
     # ssn is valid for given date_of_birth
     @validates("ssn")
     def validate_ssn(self, key, ssn):
+        assert len(ssn) == 11
         assert ssn[0:6] == self.date_of_birth.strftime("%d%m%y")
         return ssn
 
@@ -97,7 +103,8 @@ class Student(db.Model):
 
 
 class Course(db.Model):
-
+    """A class that represents a course. Stores the course name, code, teacher and ects. Addittionally, stores all the assessments for the course, as well as all the students that have an assessment for it.
+    The ects value must be greater than and the course code must be unique."""
     # COLUMNS
     #
     # constraints
