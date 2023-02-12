@@ -1,19 +1,18 @@
 import datetime
-import os
 import click
 from flask.cli import with_appcontext
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event, CheckConstraint
 from sqlalchemy.future import Engine
 from sqlalchemy.orm import validates
 from app import db
+
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
+
 
 class Assessment(db.Model):
     """A class that represents an assessment. Contains references to the student and the course it is related to.
@@ -129,14 +128,12 @@ class Course(db.Model):
 @click.command("init-db")
 @with_appcontext
 def init_db():
-
     db.create_all()
+
 
 @click.command("testgen")
 @with_appcontext
 def generate_test_data():
-
-
     s1 = Student(
         first_name='Draco',
         last_name='Malfoy',
@@ -171,7 +168,7 @@ def generate_test_data():
         code='006031',
         ects=8
     )
-    
+
     a_s1_c1 = Assessment(
         student=s1,
         course=c1,

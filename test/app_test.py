@@ -2,10 +2,13 @@ import datetime
 import os
 import pytest
 import tempfile
+
+from flask import Flask
 from sqlalchemy import event, Engine
 from sqlalchemy.exc import IntegrityError
 
-from db.app import app, db, Student, Course, Assessment
+from model.model import Student, Course, Assessment
+from app import db
 
 
 @event.listens_for(Engine, "connect")
@@ -18,10 +21,18 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 @pytest.fixture
 def db_handle():
     db_fd, db_fname = tempfile.mkstemp()
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_fname
-    app.config["TESTING"] = True
+    app = Flask(__name__, instance_relative_config=True)
+
+    app.config.from_mapping(
+        SECRET_KEY="dev",
+        SQLALCHEMY_DATABASE_URI="sqlite:///" + db_fname,
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
+    )
+
+    db.init_app(app)
 
     app.app_context().push()
+
     db.create_all()
 
     yield db
