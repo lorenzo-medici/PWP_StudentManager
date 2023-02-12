@@ -5,7 +5,8 @@ import tempfile
 from sqlalchemy import event, Engine
 from sqlalchemy.exc import IntegrityError
 
-from db.app import app, db, Student, Course, Assessment
+from model.model import Student, Course, Assessment
+from app import db, create_app
 
 
 @event.listens_for(Engine, "connect")
@@ -18,6 +19,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 @pytest.fixture
 def db_handle():
     db_fd, db_fname = tempfile.mkstemp()
+    app = create_app()
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + db_fname
     app.config["TESTING"] = True
 
