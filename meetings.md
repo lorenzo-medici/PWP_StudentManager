@@ -5,7 +5,7 @@
 * **ASSISTANT: Mika Oja**
 
 ### Minutes
-Revision and grading of te deliverable for Deadline 1.
+Revision and grading of the deliverable for Deadline 1.
 
 
 ### Action points
@@ -14,15 +14,17 @@ Revision and grading of te deliverable for Deadline 1.
 
 
 ## Meeting 2.
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE: 16/02/2023**
+* **ASSISTANT: Iván Sánchez Milara**
 
 ### Minutes
-*Summary of what was discussed during the meeting*
+Revision and grading of the deliverable for Deadline 2
 
 ### Action points
-*List here the actions points discussed with assistants*
-
+ - Mention we are using SQLite in the wiki page to justify the ER diagram
+ - Mention the format for SSN field of Students
+ - Minor corrections to the Wiki page for consistency with the code
+ - Add ondelete in db.relationship objects
 
 
 

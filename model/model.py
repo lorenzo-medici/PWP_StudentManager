@@ -86,7 +86,7 @@ class Student(db.Model):
     # RELATIONSHIPS
     #  - all of the student's assessments
 
-    assessments = db.relationship("Assessment", back_populates="student")
+    assessments = db.relationship("Assessment", cascade="all, delete-orphan", back_populates="student")
 
     # DIRECT REFERENCE
     #   using Assessment as it was a db.Table, we have a reference to the list of courses the student
@@ -114,7 +114,7 @@ class Course(db.Model):
     # RELATIONSHIPS
     #  - all of the assessments for this course
 
-    assessments = db.relationship("Assessment", back_populates="course")
+    assessments = db.relationship("Assessment", cascade="all, delete-orphan", back_populates="course")
 
     # DIRECT REFERENCE
     #   using Assessment as it was a db.Table, we have a reference to the list of students that have assessments

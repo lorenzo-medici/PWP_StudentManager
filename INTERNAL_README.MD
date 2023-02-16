@@ -1,6 +1,12 @@
 ## Internal ReadMe
 
 
+
+# TODO:
+ - Check why `from model import model` is not at the top in `app.py`
+ - Add Client example in the wiki for Deadline 1
+ - Fix project structure
+
 ### Usage
 
 1. Initialising empty SQLite database:
