@@ -1,5 +1,25 @@
 ## Internal ReadMe
 
+ - resource classes
+ - json schema
+ - url validator
+ - tests
+
+# Daniel
+ - Assessments
+
+# Alessandro
+ - Students
+
+# Pranav
+ - Courses
+
+# Lorenzo
+ - Project structure
+ - regex for student ssn
+ - wiki
+
+
 
 
 # TODO:
