@@ -1,14 +1,13 @@
 import datetime
 import os
-import pytest
 import tempfile
 
-from flask import Flask
+import pytest
 from sqlalchemy import event, Engine
 from sqlalchemy.exc import IntegrityError
 
-from model.model import Student, Course, Assessment
-from app import db
+from studentmanager import create_app, db
+from studentmanager.models import Student, Course, Assessment
 
 
 @event.listens_for(Engine, "connect")
@@ -19,31 +18,26 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 @pytest.fixture
-def db_handle():
+def app():
     db_fd, db_fname = tempfile.mkstemp()
-    app = Flask(__name__, instance_relative_config=True)
+    config = {
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
+        "TESTING": True
+    }
 
-    app.config.from_mapping(
-        SECRET_KEY="dev",
-        SQLALCHEMY_DATABASE_URI="sqlite:///" + db_fname,
-        SQLALCHEMY_TRACK_MODIFICATIONS=False
-    )
-
-    db.init_app(app)
+    app = create_app(config)
 
     app.app_context().push()
 
     db.create_all()
 
-    yield db
+    yield app
 
-    db.session.remove()
-    db.drop_all()
     os.close(db_fd)
     os.unlink(db_fname)
 
 
-def test_create_student(db_handle):
+def test_create_student(app):
     """Tests successful creation of a student entry in the database"""
     student = Student(
         first_name='name',
@@ -52,12 +46,12 @@ def test_create_student(db_handle):
         ssn='010223X0000'
     )
 
-    db_handle.session.add(student)
-    db_handle.session.commit()
+    db.session.add(student)
+    db.session.commit()
     assert Student.query.count() == 1
 
 
-def test_unique_ssn(db_handle):
+def test_unique_ssn(app):
     """Tests the uniqueness contraint for Social Security Numbers"""
     student1 = Student(
         first_name='name1',
@@ -72,13 +66,13 @@ def test_unique_ssn(db_handle):
         ssn='010223X0000'
     )
 
-    db_handle.session.add(student1)
-    db_handle.session.add(student2)
+    db.session.add(student1)
+    db.session.add(student2)
     with pytest.raises(IntegrityError):
         db.session.commit()
 
 
-def test_future_date_of_birth(db_handle):
+def test_future_date_of_birth(app):
     """Tests the constraint for a date_of_birth in the past"""
     with pytest.raises(AssertionError):
         student = Student(
@@ -89,7 +83,7 @@ def test_future_date_of_birth(db_handle):
         )
 
 
-def test_create_course(db_handle):
+def test_create_course(app):
     """Tests successful creation of a course entry in the database"""
     course = Course(
         title='course',
@@ -98,12 +92,12 @@ def test_create_course(db_handle):
         ects=1
     )
 
-    db_handle.session.add(course)
-    db_handle.session.commit()
+    db.session.add(course)
+    db.session.commit()
     assert Course.query.count() == 1
 
 
-def test_invalid_ects(db_handle):
+def test_invalid_ects(app):
     """Tests the constraint for a number of ects greater than 0"""
     course = Course(
         title='course',
@@ -112,12 +106,12 @@ def test_invalid_ects(db_handle):
         ects=0
     )
 
-    db_handle.session.add(course)
+    db.session.add(course)
     with pytest.raises(IntegrityError):
-        db_handle.session.commit()
+        db.session.commit()
 
 
-def test_unique_course_code(db_handle):
+def test_unique_course_code(app):
     """Tests for the uniqueness constraint for course codes"""
     course1 = Course(
         title='course1',
@@ -132,13 +126,13 @@ def test_unique_course_code(db_handle):
         ects=1
     )
 
-    db_handle.session.add(course1)
-    db_handle.session.add(course2)
+    db.session.add(course1)
+    db.session.add(course2)
     with pytest.raises(IntegrityError):
-        db_handle.session.commit()
+        db.session.commit()
 
 
-def test_create_assessment(db_handle):
+def test_create_assessment(app):
     """Tests successful creation of an assessment entry in the database"""
     student = Student(
         first_name='name',
@@ -165,7 +159,7 @@ def test_create_assessment(db_handle):
     assert Assessment.query.count() == 1
 
 
-def test_valid_grade(db_handle):
+def test_valid_grade(app):
     """Tests the constraint for a valid grade"""
     student = Student(
         first_name='name',
@@ -191,7 +185,7 @@ def test_valid_grade(db_handle):
         db.session.commit()
 
 
-def test_future_assessment_date(db_handle):
+def test_future_assessment_date(app):
     """Tests the constraint for an assessment date not in the future"""
     student = Student(
         first_name='name',
@@ -215,7 +209,7 @@ def test_future_assessment_date(db_handle):
         )
 
 
-def test_unique_assessment(db_handle):
+def test_unique_assessment(app):
     """Tests the uniqueness constraint for a pair of student_it and course_id in Assessment"""
     student = Student(
         first_name='name',
@@ -248,7 +242,7 @@ def test_unique_assessment(db_handle):
         db.session.commit()
 
 
-def test_relationships(db_handle):
+def test_relationships(app):
     """Tests whether queries can be made on Assessment from its student and course, and the direct relationship between Student and Course"""
     student = Student(
         first_name='name',
@@ -279,7 +273,7 @@ def test_relationships(db_handle):
     assert len(course.students) == 1
 
 
-def test_foreign_key_on_delete(db_handle):
+def test_foreign_key_on_delete(app):
     """Tests successful deletion of assessment entry when either the student or the course are deleted"""
     student = Student(
         first_name='name',

@@ -1,10 +1,12 @@
 import datetime
+
 import click
 from flask.cli import with_appcontext
 from sqlalchemy import event, CheckConstraint
 from sqlalchemy.future import Engine
 from sqlalchemy.orm import validates
-from app import db
+
+from studentmanager import db
 
 
 @event.listens_for(Engine, "connect")
@@ -127,7 +129,7 @@ class Course(db.Model):
 
 @click.command("init-db")
 @with_appcontext
-def init_db():
+def init_db_command():
     db.create_all()
 
 
