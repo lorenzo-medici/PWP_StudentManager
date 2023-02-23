@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from studentmanager import create_app, db
 from studentmanager.models import Student, Course, Assessment
+from studentmanager.utils import generate_ssn
 
 
 @event.listens_for(Engine, "connect")
@@ -39,11 +40,12 @@ def app():
 
 def test_create_student(app):
     """Tests successful creation of a student entry in the database"""
+    date = datetime.date.fromisoformat('2023-02-01')
     student = Student(
         first_name='name',
         last_name='surname',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=date,
+        ssn = generate_ssn(date)
     )
 
     db.session.add(student)
@@ -53,17 +55,19 @@ def test_create_student(app):
 
 def test_unique_ssn(app):
     """Tests the uniqueness contraint for Social Security Numbers"""
+    same_date = datetime.date.fromisoformat('2023-02-01')
+    same_ssn = generate_ssn(same_date)
     student1 = Student(
         first_name='name1',
         last_name='surname1',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=same_date,
+        ssn = same_ssn
     )
     student2 = Student(
         first_name='name2',
         last_name='surname2',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=same_date,
+        ssn = same_ssn
     )
 
     db.session.add(student1)
@@ -74,12 +78,13 @@ def test_unique_ssn(app):
 
 def test_future_date_of_birth(app):
     """Tests the constraint for a date_of_birth in the past"""
+    date = datetime.date.today() + datetime.timedelta(days=1)
     with pytest.raises(AssertionError):
         student = Student(
             first_name='name',
             last_name='surname',
-            date_of_birth=datetime.date.today() + datetime.timedelta(days=1),
-            ssn='280223X0000'
+            date_of_birth=date,
+            ssn = generate_ssn(date)
         )
 
 
@@ -134,11 +139,12 @@ def test_unique_course_code(app):
 
 def test_create_assessment(app):
     """Tests successful creation of an assessment entry in the database"""
+    date = datetime.date.fromisoformat('2023-02-01')
     student = Student(
         first_name='name',
         last_name='surname',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=date,
+        ssn = generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -161,11 +167,12 @@ def test_create_assessment(app):
 
 def test_valid_grade(app):
     """Tests the constraint for a valid grade"""
+    date = datetime.date.fromisoformat('2023-02-01')
     student = Student(
         first_name='name',
         last_name='surname',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=date,
+        ssn = generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -187,11 +194,12 @@ def test_valid_grade(app):
 
 def test_future_assessment_date(app):
     """Tests the constraint for an assessment date not in the future"""
+    date = datetime.date.fromisoformat('2023-02-01')
     student = Student(
         first_name='name',
         last_name='surname',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=date,
+        ssn = generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -211,11 +219,12 @@ def test_future_assessment_date(app):
 
 def test_unique_assessment(app):
     """Tests the uniqueness constraint for a pair of student_it and course_id in Assessment"""
+    date = datetime.date.fromisoformat('2023-02-01')
     student = Student(
         first_name='name',
         last_name='surname',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=date,
+        ssn = generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -244,11 +253,12 @@ def test_unique_assessment(app):
 
 def test_relationships(app):
     """Tests whether queries can be made on Assessment from its student and course, and the direct relationship between Student and Course"""
+    date = datetime.date.fromisoformat('2023-02-01')
     student = Student(
         first_name='name',
         last_name='surname',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=date,
+        ssn = generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -275,11 +285,13 @@ def test_relationships(app):
 
 def test_foreign_key_on_delete(app):
     """Tests successful deletion of assessment entry when either the student or the course are deleted"""
+
+    date = datetime.date.fromisoformat('2023-02-01')
     student = Student(
         first_name='name',
         last_name='surname',
-        date_of_birth=datetime.date.fromisoformat('2023-02-01'),
-        ssn='010223X0000'
+        date_of_birth=date,
+        ssn=generate_ssn(date)
     )
     course = Course(
         title='course',

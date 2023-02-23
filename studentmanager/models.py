@@ -7,6 +7,7 @@ from sqlalchemy.future import Engine
 from sqlalchemy.orm import validates
 
 from studentmanager import db
+from studentmanager.utils import is_valid_ssn
 
 
 @event.listens_for(Engine, "connect")
@@ -81,8 +82,7 @@ class Student(db.Model):
     # ssn is valid for given date_of_birth
     @validates("ssn")
     def validate_ssn(self, key, ssn):
-        assert len(ssn) == 11
-        assert ssn[0:6] == self.date_of_birth.strftime("%d%m%y")
+        assert is_valid_ssn(ssn, self.date_of_birth)
         return ssn
 
     # RELATIONSHIPS
@@ -140,21 +140,21 @@ def generate_test_data():
         first_name='Draco',
         last_name='Malfoy',
         date_of_birth=datetime.date.fromisoformat('1980-06-05'),
-        ssn='050680X4123'
+        ssn='050680-4123'
     )
 
     s2 = Student(
         first_name='Harry',
         last_name='Potter',
         date_of_birth=datetime.date.fromisoformat('1980-07-31'),
-        ssn='310780X8245'
+        ssn='310780-8245'
     )
 
     s3 = Student(
         first_name='Hermione',
         last_name='Granger',
         date_of_birth=datetime.date.fromisoformat('1979-09-19'),
-        ssn='190979X1095'
+        ssn='190979-1095'
     )
 
     c1 = Course(
