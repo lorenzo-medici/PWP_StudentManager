@@ -2,6 +2,7 @@
 
 ### IMPORTANT STUFF:
 
+- Use `studentmanager.utils.generate_ssn` to generate valid ssn's based on the date object passes (e.g. `datetime.date(2000, 1, 1)`)
 - Use `url_for("api.sensoritem", sensor="uo-donkeysensor-1")` instead
   of `api.url_for(SensorItem, sensor="uo-donkeysensor-1")` (of course with our entity names)
 - You can create a file for each pair of resources in `studentmanager/resources`
