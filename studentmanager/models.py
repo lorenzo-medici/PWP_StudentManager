@@ -1,6 +1,7 @@
 import datetime
 
 import click
+import pytest
 from flask.cli import with_appcontext
 from sqlalchemy import event, CheckConstraint
 from sqlalchemy.future import Engine
@@ -140,21 +141,21 @@ def generate_test_data():
         first_name='Draco',
         last_name='Malfoy',
         date_of_birth=datetime.date.fromisoformat('1980-06-05'),
-        ssn='050680-4123'
+        ssn='050680-6367'
     )
 
     s2 = Student(
         first_name='Harry',
         last_name='Potter',
         date_of_birth=datetime.date.fromisoformat('1980-07-31'),
-        ssn='310780-8245'
+        ssn='310780-6176'
     )
 
     s3 = Student(
         first_name='Hermione',
         last_name='Granger',
         date_of_birth=datetime.date.fromisoformat('1979-09-19'),
-        ssn='190979-1095'
+        ssn='190979-8400'
     )
 
     c1 = Course(
@@ -227,3 +228,8 @@ def generate_test_data():
     db.session.add(a_s3_c2)
 
     db.session.commit()
+
+
+@click.command("testrun")
+def run_tests():
+    pytest.main(["-x", "tests"])

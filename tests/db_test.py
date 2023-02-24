@@ -28,9 +28,8 @@ def app():
 
     app = create_app(config)
 
-    app.app_context().push()
-
-    db.create_all()
+    with app.app_context():
+        db.create_all()
 
     yield app
 
@@ -45,12 +44,12 @@ def test_create_student(app):
         first_name='name',
         last_name='surname',
         date_of_birth=date,
-        ssn = generate_ssn(date)
+        ssn=generate_ssn(date)
     )
-
-    db.session.add(student)
-    db.session.commit()
-    assert Student.query.count() == 1
+    with app.app_context():
+        db.session.add(student)
+        db.session.commit()
+        assert Student.query.count() == 1
 
 
 def test_unique_ssn(app):
@@ -61,19 +60,19 @@ def test_unique_ssn(app):
         first_name='name1',
         last_name='surname1',
         date_of_birth=same_date,
-        ssn = same_ssn
+        ssn=same_ssn
     )
     student2 = Student(
         first_name='name2',
         last_name='surname2',
         date_of_birth=same_date,
-        ssn = same_ssn
+        ssn=same_ssn
     )
-
-    db.session.add(student1)
-    db.session.add(student2)
-    with pytest.raises(IntegrityError):
-        db.session.commit()
+    with app.app_context():
+        db.session.add(student1)
+        db.session.add(student2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
 
 
 def test_future_date_of_birth(app):
@@ -84,7 +83,7 @@ def test_future_date_of_birth(app):
             first_name='name',
             last_name='surname',
             date_of_birth=date,
-            ssn = generate_ssn(date)
+            ssn=generate_ssn(date)
         )
 
 
@@ -97,9 +96,10 @@ def test_create_course(app):
         ects=1
     )
 
-    db.session.add(course)
-    db.session.commit()
-    assert Course.query.count() == 1
+    with app.app_context():
+        db.session.add(course)
+        db.session.commit()
+        assert Course.query.count() == 1
 
 
 def test_invalid_ects(app):
@@ -111,9 +111,10 @@ def test_invalid_ects(app):
         ects=0
     )
 
-    db.session.add(course)
-    with pytest.raises(IntegrityError):
-        db.session.commit()
+    with app.app_context():
+        db.session.add(course)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
 
 
 def test_unique_course_code(app):
@@ -131,10 +132,11 @@ def test_unique_course_code(app):
         ects=1
     )
 
-    db.session.add(course1)
-    db.session.add(course2)
-    with pytest.raises(IntegrityError):
-        db.session.commit()
+    with app.app_context():
+        db.session.add(course1)
+        db.session.add(course2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
 
 
 def test_create_assessment(app):
@@ -144,7 +146,7 @@ def test_create_assessment(app):
         first_name='name',
         last_name='surname',
         date_of_birth=date,
-        ssn = generate_ssn(date)
+        ssn=generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -159,10 +161,10 @@ def test_create_assessment(app):
         date=datetime.date.fromisoformat('2023-02-08')
     )
 
-    db.session.add(assessment)
-    db.session.commit()
-
-    assert Assessment.query.count() == 1
+    with app.app_context():
+        db.session.add(assessment)
+        db.session.commit()
+        assert Assessment.query.count() == 1
 
 
 def test_valid_grade(app):
@@ -172,7 +174,7 @@ def test_valid_grade(app):
         first_name='name',
         last_name='surname',
         date_of_birth=date,
-        ssn = generate_ssn(date)
+        ssn=generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -187,9 +189,10 @@ def test_valid_grade(app):
         date=datetime.date.fromisoformat('2023-02-08')
     )
 
-    db.session.add(assessment)
-    with pytest.raises(IntegrityError):
-        db.session.commit()
+    with app.app_context():
+        db.session.add(assessment)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
 
 
 def test_future_assessment_date(app):
@@ -199,7 +202,7 @@ def test_future_assessment_date(app):
         first_name='name',
         last_name='surname',
         date_of_birth=date,
-        ssn = generate_ssn(date)
+        ssn=generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -224,7 +227,7 @@ def test_unique_assessment(app):
         first_name='name',
         last_name='surname',
         date_of_birth=date,
-        ssn = generate_ssn(date)
+        ssn=generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -245,10 +248,11 @@ def test_unique_assessment(app):
         date=datetime.date.fromisoformat('2023-02-07')
     )
 
-    db.session.add(assessment1)
-    db.session.add(assessment2)
-    with pytest.raises(IntegrityError):
-        db.session.commit()
+    with app.app_context():
+        db.session.add(assessment1)
+        db.session.add(assessment2)
+        with pytest.raises(IntegrityError):
+            db.session.commit()
 
 
 def test_relationships(app):
@@ -258,7 +262,7 @@ def test_relationships(app):
         first_name='name',
         last_name='surname',
         date_of_birth=date,
-        ssn = generate_ssn(date)
+        ssn=generate_ssn(date)
     )
     course = Course(
         title='course',
@@ -273,14 +277,15 @@ def test_relationships(app):
         date=datetime.date.fromisoformat('2023-02-08')
     )
 
-    db.session.add(assessment)
-    db.session.commit()
+    with app.app_context():
+        db.session.add(assessment)
+        db.session.commit()
 
-    assert Assessment.query.filter_by(student=student).count() == 1
-    assert Assessment.query.filter_by(course=course).count() == 1
+        assert Assessment.query.filter_by(student=student).count() == 1
+        assert Assessment.query.filter_by(course=course).count() == 1
 
-    assert len(student.courses) == 1
-    assert len(course.students) == 1
+        assert len(student.courses) == 1
+        assert len(course.students) == 1
 
 
 def test_foreign_key_on_delete(app):
@@ -306,18 +311,17 @@ def test_foreign_key_on_delete(app):
         date=datetime.date.fromisoformat('2023-02-08')
     )
 
-    db.session.add(assessment)
-    db.session.commit()
+    with app.app_context():
+        db.session.add(assessment)
+        db.session.commit()
 
-    Student.query.filter_by(student_id=student.student_id).delete()
-    db.session.commit()
+        Student.query.filter_by(student_id=student.student_id).delete()
+        db.session.commit()
+        assert Assessment.query.count() == 0
 
-    assert Assessment.query.count() == 0
+        db.session.add(assessment)
+        db.session.commit()
 
-    db.session.add(assessment)
-    db.session.commit()
-
-    Course.query.filter_by(course_id=course.course_id).delete()
-    db.session.commit()
-
-    assert Assessment.query.count() == 0
+        Course.query.filter_by(course_id=course.course_id).delete()
+        db.session.commit()
+        assert Assessment.query.count() == 0
