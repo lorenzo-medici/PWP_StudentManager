@@ -9,16 +9,12 @@
 * Student 3. Alessandro Nardi \<alessandro.nardi@student.oulu.fi\>
 * Student 4. Dániel Szabó \<daniel.szabo@student.oulu.fi\>
 
-# Database
 
-## Models
-
-The `model.py` file containing the classes can be found in the `model/` subfolder.
-
-## Dependencies
+# Dependencies
 
 The dependencies for this project are:
 
+### UPDATE SECTION
 |      Module      | Version |
 |:----------------:|:-------:|
 |      Flask       |  2.2.2  |
@@ -32,15 +28,26 @@ These dependencies can be installed by executing `pip install -r requirements.tx
 Alternatively, they can be installed by
 executing `pip install Flask==2.2.2 flask_sqlalchemy==3.0.3 SQLAlchemy==2.0.2 click==8.1.3`.
 
-If you want to execute the tests, you can append `pytest==7.2.1` to the last command, or to the `requirements.txt` file
-before executing `pip install -r requirements.txt`. Finally, `pytest` can be executed to run the tests.
 
 The database engine used is SQLite, version 3.40.1.
 
-## Inizialization and population
+# Database Inizialization and population
 
-The database can be initialized by executing `flask --app app init-db`.
-After that, it can be populated with test data by executing `flask --app app testgen`.
+The database can be initialized by executing `flask --app studentmanager init-db`.
+After that, it can be populated with test data by executing `flask --app studentmanager testgen`.
 The code for these functions is contained in the `model.py` file.
 
-A populated `db` file can be found in the `instance/` subfolder.
+The populated `db` file can be found in the `instance/` subfolder.
+
+# Running the application
+
+After the database has been initialized (check if it is necessary???), the application can be started by executing `flask --app studentmanager run`.
+This will start a running server on the local machine, which will then be available by typing `http://127.0.0.1:5000/` in the browser's address bar.
+
+The root of the API will be available at `http://localhost:5000/api/` [TO EDIT, it should probably be /studentmanager/api/v1/]
+
+# Testing
+
+### ADD TEST DEPENDENCY TABLE
+In the `tests/` subfolder, some files containing functional tests can be found, these will test the model classes and database, and the API.
+To run the tests it is sufficient to execute `flask --app studentmanager testrun` from the project's root folder.
