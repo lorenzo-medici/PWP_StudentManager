@@ -127,6 +127,54 @@ class Course(db.Model):
 
     students = db.relationship("Student", secondary="assessments", back_populates="courses", viewonly=True)
 
+    # SERIALIZATION METHODS
+
+    def serialize(self, short_form=False):
+        doc = {
+            "title": self.title,
+            "teacher": self.teacher,
+            "code": self.code,
+            "ects": self.ects
+        }
+        if not short_form:
+            doc["assessments"] = [a.serialize(short_form=True) for a in self.assessments]
+
+        return doc
+
+    def deserialize(self, doc):
+        self.title = doc["title"]
+        self.teacher = doc["teacher"]
+        self.code = doc["code"]
+        self.ects = doc["ects"]
+
+    # JSON schema for validation
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["title", "teacher", "code", "ects"]
+        }
+        props = schema["properties"] = {}
+        props["title"] = {
+            "description": "Name of the course",
+            "type": "string",
+        }
+        props["teacher"] = {
+            "description": "Teacher responsible for the course",
+            "type": "string",
+        }
+        props["code"] = {
+            "description": "Code of the course",
+            "type": "string",
+        }
+        props["ects"] = {
+            "description": "Number of ECTS granted by the course",
+            "type": "number",
+        }
+
+        return schema
+
 
 @click.command("init-db")
 @with_appcontext
