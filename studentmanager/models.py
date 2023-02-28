@@ -99,6 +99,24 @@ class Student(db.Model):
 
     courses = db.relationship("Course", secondary="assessments", back_populates="students", viewonly=True)
 
+    #SERIALIZER
+    def serialize(self):
+        return {'first_name': self.first_name,
+                'last_name': self.last_name,
+                'student_id': self.student_id,
+                'date_of_birt': self.date_of_birth.strftime('%Y-%m-%d'),
+                'ssn': self.ssn}
+    def deserialize(self, doc):
+        self.student_id = doc["student_it"]
+        self.ssn = doc["ssn"]
+        self.first_name = doc["first_name"]
+        self.last_name = doc["last_name"]
+        try:
+            self.date_of_birth = datetime.date.fromisoformat(doc["date_of_birth"])
+        except ValueError:
+            raise ValueError
+
+
 
 class Course(db.Model):
     """A class that represents a course. Stores the course name, code, teacher and ects. Addittionally, stores all the assessments for the course, as well as all the students that have an assessment for it.

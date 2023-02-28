@@ -42,6 +42,8 @@ def create_app(test_config=None):
     # import not at the top of the file to avoid circular imports
 
     from . import api
+    from studentmanager.utils import StudentConverter
+    app.url_map.converters["student"] = StudentConverter
     app.register_blueprint(api.api_bp)
 
     return app
