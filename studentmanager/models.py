@@ -1,11 +1,15 @@
 import datetime
+import hashlib
+import secrets
 
 import click
 import pytest
+from flask import request
 from flask.cli import with_appcontext
 from sqlalchemy import event, CheckConstraint
 from sqlalchemy.future import Engine
 from sqlalchemy.orm import validates
+from werkzeug.exceptions import Forbidden
 
 from studentmanager import db
 from studentmanager.utils import is_valid_ssn
@@ -176,6 +180,41 @@ class Course(db.Model):
         return schema
 
 
+class ApiKey(db.Model):
+    key = db.Column(db.String(32), nullable=False, unique=True, primary_key=True)
+    admin = db.Column(db.Boolean, default=False)
+
+    @staticmethod
+    def key_hash(key):
+        return hashlib.sha256(key.encode()).digest()
+
+
+# From the Sensorhub example project
+def require_admin(func):
+    def wrapper(*args, **kwargs):
+        key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key", "").strip())
+        db_key = ApiKey.query.filter_by(admin=True).first()
+        if secrets.compare_digest(key_hash, db_key.key):
+            return func(*args, **kwargs)
+        raise Forbidden
+
+    return wrapper
+
+
+# From the Sensorhub example project
+
+def require_assessment_key(func):
+    def wrapper(self, *args, **kwargs):
+        key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key").strip())
+        db_keys = ApiKey.query.all()
+        for k in db_keys:
+            if secrets.compare_digest(key_hash, k.key):
+                return func(*args, **kwargs)
+        raise Forbidden
+
+    return wrapper
+
+
 @click.command("init-db")
 @with_appcontext
 def init_db_command():
@@ -281,3 +320,16 @@ def generate_test_data():
 @click.command("testrun")
 def run_tests():
     pytest.main(["-x", "tests"])
+
+
+@click.command("masterkey")
+@with_appcontext
+def generate_master_key():
+    token = secrets.token_urlsafe()
+    db_key = ApiKey(
+        key=ApiKey.key_hash(token),
+        admin=True
+    )
+    db.session.add(db_key)
+    db.session.commit()
+    print(token)
