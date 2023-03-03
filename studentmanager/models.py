@@ -237,11 +237,11 @@ class ApiKey(db.Model):
 
 
 # From the Sensorhub example project
-def require_admin(func):
+def require_admin_key(func):
     def wrapper(*args, **kwargs):
         key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key", "").strip())
         db_key = ApiKey.query.filter_by(admin=True).first()
-        if secrets.compare_digest(key_hash, db_key.key):
+        if db_key is None or secrets.compare_digest(key_hash, db_key.key):
             return func(*args, **kwargs)
         raise Forbidden
 
@@ -250,9 +250,9 @@ def require_admin(func):
 
 # From the Sensorhub example project
 
-def require_assessment_key(func):
-    def wrapper(self, *args, **kwargs):
-        key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key").strip())
+def require_assessments_key(func):
+    def wrapper(*args, **kwargs):
+        key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key", "").strip())
         db_keys = ApiKey.query.all()
         for k in db_keys:
             if secrets.compare_digest(key_hash, k.key):

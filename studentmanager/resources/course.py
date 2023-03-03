@@ -1,4 +1,4 @@
-from flask import request, abort, url_for, Response
+from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
 from sqlalchemy.exc import IntegrityError
@@ -6,7 +6,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.routing import BaseConverter
 
 from studentmanager import db
-from studentmanager.models import Course
+from studentmanager.models import Course, require_admin_key
 
 
 class CourseCollection(Resource):
@@ -19,6 +19,7 @@ class CourseCollection(Resource):
 
         return courses_list
 
+    @require_admin_key
     def post(self):
         """Adds a new course.
         Returns 415 if the requests is not a valid json request.
@@ -60,6 +61,7 @@ class CourseItem(Resource):
         # TODO remove short_form
         return course.serialize(short_form=True)
 
+    @require_admin_key
     def put(self, course):
         """Edits the course's data.
         Returns 415 if the requests is not a valid json request.
@@ -87,6 +89,7 @@ class CourseItem(Resource):
 
         return Response(status=204)
 
+    @require_admin_key
     def delete(self, course):
         """Deletes the existing course"""
         db.session.delete(course)

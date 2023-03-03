@@ -49,9 +49,8 @@ def create_app(test_config=None):
     from studentmanager.resources.student import StudentConverter
 
     app.url_map.converters["course"] = CourseConverter
-    app.register_blueprint(api_bp)
-
     app.url_map.converters["student"] = StudentConverter
+
     app.register_blueprint(api_bp)
 
     # CACHE initialization

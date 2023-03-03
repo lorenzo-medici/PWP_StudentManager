@@ -7,7 +7,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.routing import BaseConverter
 
 from studentmanager import db
-from studentmanager.models import Student
+from studentmanager.models import Student, require_admin_key
 
 
 class StudentCollection(Resource):
@@ -20,6 +20,7 @@ class StudentCollection(Resource):
 
         return students_list
 
+    @require_admin_key
     def post(self):
         """Adds a new student.
         Returns 415 if the request is not a valid json request.
@@ -62,6 +63,7 @@ class StudentItem(Resource):
         # TODO remove short_form
         return student.serialize(short_form=True)
 
+    @require_admin_key
     def put(self, student):
         """Edits the student's data.
         Returns 415 if the requests is not a valid json request.
@@ -89,6 +91,7 @@ class StudentItem(Resource):
 
         return Response(status=204)
 
+    @require_admin_key
     def delete(self, student):
         """Deletes the existing student"""
         db.session.delete(student)
