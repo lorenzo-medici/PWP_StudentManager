@@ -12,6 +12,27 @@ from studentmanager import create_app, db
 from studentmanager.models import Assessment, Student, Course
 
 
+@pytest.fixture
+def client():
+    db_fd, db_fname = tempfile.mkstemp()
+    config = {
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
+        "TESTING": True
+    }
+
+    app = create_app(config)
+
+    with app.app_context():
+        db.create_all()
+        _populate_db()
+
+    yield app.test_client()
+
+    with app.app_context():
+        db.session.remove()
+
+    os.close(db_fd)
+    os.unlink(db_fname)
 
 
 

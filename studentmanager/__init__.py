@@ -3,9 +3,11 @@
 import os
 
 from flask import Flask
+from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+cache = Cache()
 
 
 # Based on http://flask.pocoo.org/docs/1.0/tutorial/factory/#the-application-factory
@@ -32,18 +34,26 @@ def create_app(test_config=None):
 
     # MODELS and CLICK functions
     # import not at the top of the file to avoid circular imports
-    from . import models
+    from studentmanager.models import generate_test_data, run_tests, init_db_command  # , generate_master_key
 
-    app.cli.add_command(models.init_db_command)
-    app.cli.add_command(models.generate_test_data)
-    app.cli.add_command(models.run_tests)
+    app.cli.add_command(init_db_command)
+    app.cli.add_command(generate_test_data)
+    app.cli.add_command(run_tests)
+    # app.cli.add_command(generate_master_key)
 
     # API and BLUEPRINT
     # import not at the top of the file to avoid circular imports
 
-    from . import api
+    from studentmanager.api import api_bp
+
     from studentmanager.utils import StudentConverter
     app.url_map.converters["student"] = StudentConverter
-    app.register_blueprint(api.api_bp)
+    app.register_blueprint(api_bp)
+
+    # CACHE initialization
+    app.config["CACHE_TYPE"] = "FileSystemCache"
+    app.config["CACHE_DIR"] = "cache"
+
+    cache.init_app(app)
 
     return app
