@@ -99,15 +99,17 @@ class Student(db.Model):
 
     courses = db.relationship("Course", secondary="assessments", back_populates="students", viewonly=True)
 
-    #SERIALIZER
+    # SERIALIZER
     def serialize(self):
         return {'first_name': self.first_name,
                 'last_name': self.last_name,
                 'student_id': self.student_id,
-                'date_of_birt': self.date_of_birth.strftime('%Y-%m-%d'),
+                'date_of_birth': self.date_of_birth.strftime('%Y-%m-%d'),
                 'ssn': self.ssn}
+
+    # DESERIALIZER
     def deserialize(self, doc):
-        self.student_id = doc["student_it"]
+        # self.student_id = doc["student_id"]
         self.ssn = doc["ssn"]
         self.first_name = doc["first_name"]
         self.last_name = doc["last_name"]
@@ -116,6 +118,31 @@ class Student(db.Model):
         except ValueError:
             raise ValueError
 
+    # JSON SCHEMA
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["first_name", "last_name", "ssn", "date_of_birth"]
+        }
+        props = schema["proprieties"] = {}
+        props["ssn"] = {
+            "description": "student social security number",
+            "type": "string",
+        }
+        props["first_name"] = {
+            "description": "Student first name",
+            "type": "string",
+        }
+        props["last_name"] = {
+            "description": "Student last name",
+            "type": "string"
+        }
+        props["date_of_birt"] = {
+            "description": "Student birth date in the format yyyy-mm-dd",
+            "type": "string",
+        }
+        return schema
 
 
 class Course(db.Model):

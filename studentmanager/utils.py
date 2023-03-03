@@ -39,11 +39,11 @@ def generate_ssn(date):
 
 class StudentConverter(BaseConverter):
 
-    def to_python(self, student_ssn):
-        db_student = Student.query.filter_by(ssn=student_ssn).first()
+    def to_python(self, student_id):
+        db_student = Student.query.filter_by(student_id=student_id).first()
         if db_student is None:
             raise NotFound
         return db_student
 
     def to_url(self, db_student):
-        return db_student.ssn
+        return db_student.student_id
