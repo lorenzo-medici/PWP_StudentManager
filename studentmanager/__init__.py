@@ -56,4 +56,5 @@ def create_app(test_config=None):
 
     cache.init_app(app)
 
+
     return app
