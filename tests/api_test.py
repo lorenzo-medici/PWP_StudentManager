@@ -149,10 +149,11 @@ class TestCourseCollection(object):
         valid = _get_course_json()
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 201
-        assert resp.headers["Location"].endswith(self.RESOURCE_URL + valid["code"] + "/")
+        assert "Location" in resp.headers
         resp = client.get(resp.headers["Location"])
         assert resp.status_code == 200
         body = json.loads(resp.data)
+        assert "course_id" in body
         assert body["title"] == valid["title"]
         assert body["teacher"] == valid["teacher"]
         assert body["code"] == valid["code"]
@@ -181,18 +182,19 @@ class TestCourseCollection(object):
 
 
 class TestCourseItem(object):
-    RESOURCE_URL = "/api/courses/006031/"
-    INVALID_URL = "/api/courses/XXXXXX-XXXX/"
+    RESOURCE_URL = "/api/courses/1/"
+    INVALID_URL = "/api/courses/X/"
 
     def test_get(self, client):
         """Successfully gets an existing course"""
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
         body = json.loads(resp.data)
-        assert body["title"] == 'Defence Against the Dark Arts'
-        assert body["teacher"] == 'Professur Severus Snape'
-        assert body["code"] == '006031'
-        assert body["ects"] == 8
+        assert "course_id" in body
+        assert body["title"] == 'Transfiguration'
+        assert body["teacher"] == 'Minerva Mcgonagall'
+        assert body["code"] == '004723'
+        assert body["ects"] == 5
 
     def test_get_invalid_url(self, client):
         """Tries to get a non existent course"""
@@ -224,7 +226,7 @@ class TestCourseItem(object):
         """Tries to change an existing course's code into an already existing one"""
         valid = _get_existing_course_json()
         # test with different code that conflicts with already present
-        valid["code"] = "004723"
+        valid["code"] = "006031"
         resp = client.put(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 409
 
@@ -267,10 +269,10 @@ def _get_course_json():
 
 def _get_existing_course_json():
     return {
-        "title": 'Defence Against the Dark Arts',
-        "teacher": 'Professur Severus Snape',
-        "code": '006031',
-        "ects": 8
+        "title": 'Transfiguration',
+        "teacher":'Minerva Mcgonagall',
+        "code": '004723',
+        "ects": 5
     }
 
 

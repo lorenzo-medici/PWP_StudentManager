@@ -30,7 +30,7 @@ class CourseCollection(Resource):
         try:
             validate(request.json, Course.json_schema())
         except ValidationError as exc:
-            return str(exc), 400
+            return "JSON format is not valid", 400
 
         course = Course()
         course.deserialize(request.json)
@@ -43,7 +43,7 @@ class CourseCollection(Resource):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            abort(409)
+            return f"Course already exists with code '{course.code}'", 409
 
         return Response(
             status=201,
@@ -57,7 +57,7 @@ class CourseItem(Resource):
 
     def get(self, course):
         """Returns the representation of the course"""
-        # TODO: remove short_form
+        # TODO remove short_form
         return course.serialize(short_form=True)
 
     def put(self, course):
@@ -97,11 +97,16 @@ class CourseItem(Resource):
 
 class CourseConverter(BaseConverter):
 
-    def to_python(self, value):
-        db_course = Course.query.filter_by(code=value).first()
+    def to_python(self, course_id):
+        try:
+            int_id = int(course_id)
+        except ValueError:
+            raise NotFound
+
+        db_course = Course.query.filter_by(course_id=int_id).first()
         if db_course is None:
             raise NotFound
         return db_course
 
     def to_url(self, value):
-        return value.code
+        return str(value.course_id)

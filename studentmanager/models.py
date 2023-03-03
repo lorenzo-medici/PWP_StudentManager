@@ -135,6 +135,7 @@ class Course(db.Model):
 
     def serialize(self, short_form=False):
         doc = {
+            "course_id": self.course_id,
             "title": self.title,
             "teacher": self.teacher,
             "code": self.code,
