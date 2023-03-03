@@ -1,9 +1,5 @@
 import random
 import re
-from studentmanager.models import *
-
-from werkzeug.exceptions import NotFound
-from werkzeug.routing import BaseConverter
 
 
 def is_valid_ssn(ssn, date_of_birth):
@@ -35,15 +31,3 @@ def generate_ssn(date):
     partial_ssn = f'{date_string}{century_character}{serial_number:03d}'
     control_character = generate_control_character(partial_ssn)
     return f'{partial_ssn}{control_character}'
-
-
-class StudentConverter(BaseConverter):
-
-    def to_python(self, student_id):
-        db_student = Student.query.filter_by(student_id=student_id).first()
-        if db_student is None:
-            raise NotFound
-        return db_student
-
-    def to_url(self, db_student):
-        return db_student.student_id

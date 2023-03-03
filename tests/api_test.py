@@ -35,7 +35,6 @@ def client():
     os.unlink(db_fname)
 
 
-
 def _populate_db():
     s1 = Student(
         first_name='Draco',
@@ -141,6 +140,7 @@ class TestStudentCollection(object):
         body = json.loads(resp.data)
         assert len(body) == 3
         for item in body:
+            assert "student_id" in item
             assert "first_name" in item
             assert "last_name" in item
             assert "date_of_birth" in item
@@ -151,10 +151,11 @@ class TestStudentCollection(object):
         valid = _get_student_json()
         resp = client.post(self.RESOURCE_URL, json=valid)
         assert resp.status_code == 201
-        assert resp.headers["Location"].endswith(self.RESOURCE_URL + valid["ssn"] + "/")
+        assert resp.headers["Location"] is not None
         resp = client.get(resp.headers["Location"])
         assert resp.status_code == 200
         body = json.loads(resp.data)
+        assert "student_id" in body
         assert body["first_name"] == valid["first_name"]
         assert body["last_name"] == valid["last_name"]
         assert body["date_of_birth"] == valid["date_of_birth"]
@@ -183,8 +184,8 @@ class TestStudentCollection(object):
 
 
 class TestStudentItem(object):
-    RESOURCE_URL = "/api/students/050680-6367/"
-    INVALID_URL = "/api/students/XXXXXX-XXXX/"
+    RESOURCE_URL = "/api/students/1/"
+    INVALID_URL = "/api/students/X/"
 
     def test_get(self, client):
         """Succesfully gets an existing student"""
