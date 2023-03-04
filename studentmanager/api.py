@@ -26,19 +26,3 @@ api.add_resource(StudentAssessmentItem,
 @api_bp.route("/")
 def index():
     return ""
-
-
-api_bp = Blueprint("api", __name__, url_prefix="/api")
-api = Api(api_bp)
-
-
-api.add_resource(CourseCollection, "/courses/")
-api.add_resource(CourseItem, "/courses/<course:course>/")
-
-api.add_resource(StudentCollection, "/students/")
-api.add_resource(StudentItem, "/students/<student:student>/")
-
-
-@api_bp.route("/")
-def index():
-    return ""
