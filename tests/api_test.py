@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import shutil
 import tempfile
 
 import pytest
@@ -33,9 +34,11 @@ class AuthHeaderClient(FlaskClient):
 @pytest.fixture
 def client():
     db_fd, db_fname = tempfile.mkstemp()
+    cache_dir_name = tempfile.mkdtemp()
     config = {
         "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
-        "TESTING": True
+        "TESTING": True,
+        "CACHE_DIR": cache_dir_name
     }
 
     app = create_app(config)
@@ -52,6 +55,8 @@ def client():
 
     os.close(db_fd)
     os.unlink(db_fname)
+
+    shutil.rmtree(cache_dir_name)
 
 
 def _populate_db():

@@ -55,7 +55,10 @@ def create_app(test_config=None):
 
     # CACHE initialization
     app.config["CACHE_TYPE"] = "FileSystemCache"
-    app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
+    if test_config is None or "CACHE_DIR" not in test_config:
+        app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
+    else:
+        app.config["CACHE_DIR"] = test_config["CACHE_DIR"]
 
     cache.init_app(app)
 
