@@ -33,9 +33,12 @@ class Assessment(db.Model):
     #  - grade is between 0 and 5, with 0 meaning Fail
     #  - date is at most today
 
-    course_id = db.Column(db.Integer, db.ForeignKey("course.course_id", ondelete="CASCADE"), primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey("student.student_id", ondelete="CASCADE"), primary_key=True)
-    grade = db.Column(db.Integer, CheckConstraint('grade IN (0,1,2,3,4,5)'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey(
+        "course.course_id", ondelete="CASCADE"), primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey(
+        "student.student_id", ondelete="CASCADE"), primary_key=True)
+    grade = db.Column(db.Integer, CheckConstraint(
+        'grade IN (0,1,2,3,4,5)'), nullable=False)
     date = db.Column(db.Date, nullable=False)
 
     # VALIDATORS
@@ -49,14 +52,62 @@ class Assessment(db.Model):
     # RELATIONSHIPS
     #  - only one student and one course for each assessment (useList=False)
 
-    student = db.relationship("Student", back_populates="assessments", uselist=False)
-    course = db.relationship("Course", back_populates="assessments", uselist=False)
+    student = db.relationship(
+        "Student", back_populates="assessments", uselist=False)
+    course = db.relationship(
+        "Course", back_populates="assessments", uselist=False)
 
     # TABLENAME
     #   allows direct reference between Student and Course based on all the associations;
     #   it works in the same way as the db.Table construct
 
     __tablename__ = 'assessments'
+
+    # SERIALIZER
+    def serialize(self, short_form=False):
+        doc = {'course_id': self.course_id,
+               'student_id': self.student_id,
+               'grade': self.grade,
+               'date': self.date.strftime('%Y-%m-%d')}
+        if not short_form:
+            doc["assessments"] = [a.serialize(
+                short_form=True) for a in self.assessments]
+
+        return doc
+
+    # DESERIALIZER
+    def deserialize(self, doc):
+        self.course_id = doc["course_id"]
+        self.student_id = doc["student_id"]
+        self.grade = doc["grade"]
+        self.date = datetime.date.fromisoformat(doc["date"])
+
+    # JSON SCHEMA
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["course_id", "student_id", "grade", "date"]
+        }
+        props = schema["proprieties"] = {}
+        props["course_id"] = {
+            "description": "Course identifier that this assessment belongs to",
+            "type": "string",
+        }
+        props["student_id"] = {
+            "description": "Student identifier that this assessment belongs to",
+            "type": "string",
+        }
+        props["grade"] = {
+            "description": "Achieved grade on this assessment",
+            "type": "string"
+        }
+        props["date"] = {
+            "description": "Date of assessment marking in format yyyy-mm-dd",
+            "type": "string",
+            "format": "date-time"
+        }
+        return schema
 
 
 class Student(db.Model):
@@ -93,7 +144,8 @@ class Student(db.Model):
     # RELATIONSHIPS
     #  - all of the student's assessments
 
-    assessments = db.relationship("Assessment", cascade="all, delete-orphan", back_populates="student")
+    assessments = db.relationship(
+        "Assessment", cascade="all, delete-orphan", back_populates="student")
 
     # DIRECT REFERENCE
     #   using Assessment as it was a db.Table, we have a reference to the list of courses the student
@@ -101,7 +153,8 @@ class Student(db.Model):
     # WARNING: changes will be reflected only after the Session has ended
     #   info at https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#combining-association-object-with-many-to-many-access-patterns
 
-    courses = db.relationship("Course", secondary="assessments", back_populates="students", viewonly=True)
+    courses = db.relationship(
+        "Course", secondary="assessments", back_populates="students", viewonly=True)
 
     # SERIALIZER
     def serialize(self, short_form=False):
@@ -111,7 +164,55 @@ class Student(db.Model):
                'date_of_birth': self.date_of_birth.strftime('%Y-%m-%d'),
                'ssn': self.ssn}
         if not short_form:
-            doc["assessments"] = [a.serialize(short_form=True) for a in self.assessments]
+            doc["assessments"] = [a.serialize(
+                short_form=True) for a in self.assessments]
+
+        return doc
+
+    # DESERIALIZER
+    def deserialize(self, doc):
+        self.first_name = doc["first_name"]
+        self.last_name = doc["last_name"]
+        self.date_of_birth = datetime.date.fromisoformat(doc["date_of_birth"])
+        self.ssn = doc["ssn"]
+
+    # JSON SCHEMA
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["first_name", "last_name", "ssn", "date_of_birth"]
+        }
+        props = schema["proprieties"] = {}
+        props["ssn"] = {
+            "description": "student social security number",
+            "type": "string",
+        }
+        props["first_name"] = {
+            "description": "Student first name",
+            "type": "string",
+        }
+        props["last_name"] = {
+            "description": "Student last name",
+            "type": "string"
+        }
+        props["date_of_birth"] = {
+            "description": "Student birth date in the format yyyy-mm-dd",
+            "type": "string",
+            "format": "date-time"
+        }
+        return schema
+
+    # SERIALIZER
+    def serialize(self, short_form=False):
+        doc = {'student_id': self.student_id,
+               'first_name': self.first_name,
+               'last_name': self.last_name,
+               'date_of_birth': self.date_of_birth.strftime('%Y-%m-%d'),
+               'ssn': self.ssn}
+        if not short_form:
+            doc["assessments"] = [a.serialize(
+                short_form=True) for a in self.assessments]
 
         return doc
 
@@ -167,7 +268,8 @@ class Course(db.Model):
     # RELATIONSHIPS
     #  - all of the assessments for this course
 
-    assessments = db.relationship("Assessment", cascade="all, delete-orphan", back_populates="course")
+    assessments = db.relationship(
+        "Assessment", cascade="all, delete-orphan", back_populates="course")
 
     # DIRECT REFERENCE
     #   using Assessment as it was a db.Table, we have a reference to the list of students that have assessments
@@ -175,7 +277,8 @@ class Course(db.Model):
     # WARNING: changes will be reflected only after the Session has ended
     #   info at: https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#combining-association-object-with-many-to-many-access-patterns
 
-    students = db.relationship("Student", secondary="assessments", back_populates="courses", viewonly=True)
+    students = db.relationship(
+        "Student", secondary="assessments", back_populates="courses", viewonly=True)
 
     # SERIALIZATION METHODS
 
@@ -188,7 +291,8 @@ class Course(db.Model):
             "ects": self.ects
         }
         if not short_form:
-            doc["assessments"] = [a.serialize(short_form=True) for a in self.assessments]
+            doc["assessments"] = [a.serialize(
+                short_form=True) for a in self.assessments]
 
         return doc
 
@@ -228,7 +332,8 @@ class Course(db.Model):
 
 
 class ApiKey(db.Model):
-    key = db.Column(db.String(32), nullable=False, unique=True, primary_key=True)
+    key = db.Column(db.String(32), nullable=False,
+                    unique=True, primary_key=True)
     admin = db.Column(db.Boolean, default=False)
 
     @staticmethod
@@ -239,7 +344,95 @@ class ApiKey(db.Model):
 # From the Sensorhub example project
 def require_admin_key(func):
     def wrapper(*args, **kwargs):
-        key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key", "").strip())
+        key_hash = ApiKey.key_hash(request.headers.get(
+            "Studentmanager-Api-Key", "").strip())
+        db_key = ApiKey.query.filter_by(admin=True).first()
+        if db_key is None or secrets.compare_digest(key_hash, db_key.key):
+            return func(*args, **kwargs)
+        raise Forbidden
+
+    return wrapper
+
+
+# From the Sensorhub example project
+def require_assessments_key(func):
+    def wrapper(*args, **kwargs):
+        key_hash = ApiKey.key_hash(request.headers.get(
+            "Studentmanager-Api-Key", "").strip())
+        db_keys = ApiKey.query.all()
+        for k in db_keys:
+            if secrets.compare_digest(key_hash, k.key):
+                return func(*args, **kwargs)
+        raise Forbidden
+
+    return wrapper
+
+    # SERIALIZATION METHODS
+
+    def serialize(self, short_form=False):
+        doc = {
+            "course_id": self.course_id,
+            "title": self.title,
+            "teacher": self.teacher,
+            "code": self.code,
+            "ects": self.ects
+        }
+        if not short_form:
+            doc["assessments"] = [a.serialize(
+                short_form=True) for a in self.assessments]
+
+        return doc
+
+    def deserialize(self, doc):
+        self.title = doc["title"]
+        self.teacher = doc["teacher"]
+        self.code = doc["code"]
+        self.ects = doc["ects"]
+
+    # JSON schema for validation
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["title", "teacher", "code", "ects"]
+        }
+        props = schema["properties"] = {}
+        props["title"] = {
+            "description": "Name of the course",
+            "type": "string",
+        }
+        props["teacher"] = {
+            "description": "Teacher responsible for the course",
+            "type": "string",
+        }
+        props["code"] = {
+            "description": "Code of the course",
+            "type": "string",
+        }
+        props["ects"] = {
+            "description": "Number of ECTS granted by the course",
+            "type": "number",
+        }
+
+        return schema
+
+
+class ApiKey(db.Model):
+    key = db.Column(db.String(32), nullable=False,
+                    unique=True, primary_key=True)
+    admin = db.Column(db.Boolean, default=False)
+
+    @staticmethod
+    def key_hash(key):
+        return hashlib.sha256(key.encode()).digest()
+
+
+# From the Sensorhub example project
+def require_admin_key(func):
+    def wrapper(*args, **kwargs):
+        key_hash = ApiKey.key_hash(request.headers.get(
+            "Studentmanager-Api-Key", "").strip())
         db_key = ApiKey.query.filter_by(admin=True).first()
         if db_key is None or secrets.compare_digest(key_hash, db_key.key):
             return func(*args, **kwargs)
@@ -252,7 +445,8 @@ def require_admin_key(func):
 
 def require_assessments_key(func):
     def wrapper(*args, **kwargs):
-        key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key", "").strip())
+        key_hash = ApiKey.key_hash(request.headers.get(
+            "Studentmanager-Api-Key", "").strip())
         db_keys = ApiKey.query.all()
         for k in db_keys:
             if secrets.compare_digest(key_hash, k.key):
@@ -355,6 +549,7 @@ def generate_test_data():
     db.session.add(c1)
     db.session.add(c2)
 
+    db.session.add(a_s1_c1)
     db.session.add(a_s1_c2)
     db.session.add(a_s2_c1)
     db.session.add(a_s2_c2)
@@ -372,11 +567,23 @@ def run_tests():
 @click.command("masterkey")
 @with_appcontext
 def generate_master_key():
+
+    # admin key
     token = secrets.token_urlsafe()
     db_key = ApiKey(
         key=ApiKey.key_hash(token),
         admin=True
     )
     db.session.add(db_key)
+    print("admin key: " + token)
+
+    # non-admin assessment key
+    token = secrets.token_urlsafe()
+    db_key = ApiKey(
+        key=ApiKey.key_hash(token),
+        admin=False
+    )
+    db.session.add(db_key)
+    print("assessment key: " + token)
+
     db.session.commit()
-    print(token)
