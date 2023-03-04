@@ -103,11 +103,11 @@ class CourseItem(Resource):
         return Response(status=204)
     
     def _clear_cache(self):
-        collection_path = url_for('api.CourseCollection')
-        cache.delete_many((
+        collection_path = url_for('api.coursecollection')
+        cache.delete_many(
             collection_path,
             request.path,
-        ))
+        )
 
 
 class CourseConverter(BaseConverter):
