@@ -7,10 +7,11 @@ from werkzeug.routing import BaseConverter
 
 from studentmanager import db
 from studentmanager.models import Course, require_admin_key
+from studentmanager import cache
 
 
 class CourseCollection(Resource):
-
+    @cache.cached()
     def get(self):
         """Get the lsit of courses from the database"""
         courses = Course.query.all()
@@ -41,11 +42,11 @@ class CourseCollection(Resource):
 
         try:
             db.session.add(course)
-            db.session.commit()
+            db.session.commit()         
         except IntegrityError:
             db.session.rollback()
             return f"Course already exists with code '{course.code}'", 409
-
+        self._clear_cache()
         return Response(
             status=201,
             headers={
@@ -53,9 +54,13 @@ class CourseCollection(Resource):
             }
         )
 
+    def _clear_cache(self):
+        cache.delete(
+            request.path
+        )
 
 class CourseItem(Resource):
-
+    @cache.cached()
     def get(self, course):
         """Returns the representation of the course"""
         # TODO remove short_form
@@ -86,7 +91,7 @@ class CourseItem(Resource):
         except IntegrityError:
             db.session.rollback()
             return f"Course with code '{course.code}' already exists.", 409
-
+        self._clear_cache()
         return Response(status=204)
 
     @require_admin_key
@@ -94,8 +99,15 @@ class CourseItem(Resource):
         """Deletes the existing course"""
         db.session.delete(course)
         db.session.commit()
-
+        self._clear_cache()
         return Response(status=204)
+    
+    def _clear_cache(self):
+        collection_path = url_for('api.CourseCollection')
+        cache.delete_many((
+            collection_path,
+            request.path,
+        ))
 
 
 class CourseConverter(BaseConverter):
