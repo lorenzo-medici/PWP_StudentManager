@@ -18,37 +18,22 @@
 ### Daniel
 
 - Assessments
+- change wiki table with correct urls
+- change REST conformance section with how assessments are addressed
+- update URL converter
 
 ### Alessandro
 
-- Students
+ - comment everything
 
 ### Pranav
 
-- Courses
+ - caching section in wiki
 
 ### Lorenzo
 
-- Project structure
-- regex for student ssn
-- wiki
+ - pylint
 
 # TODO:
 
-- Check why `from model import model` is not at the top in `app.py`
 - Add Client example in the wiki for Deadline 1
-- Fix project structure
-
-### Usage
-
-1. Initialising empty SQLite database:
-
-`flask --app app init-db`
-
-2. Generate and persist test data:
-
-`flask --app app testgen`
-
-3. Run the application:
-
-`flask --app app run`
