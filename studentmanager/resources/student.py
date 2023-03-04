@@ -5,13 +5,14 @@ from jsonschema.validators import Draft7Validator
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import BaseConverter
+from studentmanager import cache
 
 from studentmanager import db
 from studentmanager.models import Student, require_admin_key
 
 
 class StudentCollection(Resource):
-
+    @cache.cached()
     def get(self):
         """Get the lsit of students from the database"""
         students = Student.query.all()
@@ -47,17 +48,20 @@ class StudentCollection(Resource):
         except IntegrityError:
             db.session.rollback()
             return f"Student with ssn '{student.ssn}' already exists.", 409
-
+        self._clear_cache()        
         return Response(
             status=201,
             headers={
                 'Location': url_for('api.studentitem', student=student)
             }
         )
-
+    def _clear_cache(self):
+        cache.delete(
+            request.path
+        )
 
 class StudentItem(Resource):
-
+    @cache.cached()
     def get(self, student):
         """Returns the representation of the student"""
         # TODO remove short_form
@@ -88,7 +92,7 @@ class StudentItem(Resource):
         except IntegrityError:
             db.session.rollback()
             return f"Student with ssn '{student.ssn}' already exists.", 409
-
+        self._clear_cache()
         return Response(status=204)
 
     @require_admin_key
@@ -96,9 +100,15 @@ class StudentItem(Resource):
         """Deletes the existing student"""
         db.session.delete(student)
         db.session.commit()
-
+        self._clear_cache()
         return Response(status=204)
 
+    def _clear_cache(self):
+        collection_path = url_for('api.studentcollection')
+        cache.delete_many(
+            collection_path,
+            request.path,
+        )
 
 class StudentConverter(BaseConverter):
 
