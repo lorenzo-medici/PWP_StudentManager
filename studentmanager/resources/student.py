@@ -9,10 +9,11 @@ from werkzeug.routing import BaseConverter
 from studentmanager import cache
 from studentmanager import db
 from studentmanager.models import Student, require_admin_key
+from studentmanager.utils import request_path_cache_key
 
 
 class StudentCollection(Resource):
-    @cache.cached()
+    @cache.cached(make_cache_key=request_path_cache_key)
     def get(self):
         """
         Get the list of al the students as a json response
@@ -68,7 +69,7 @@ class StudentCollection(Resource):
 
 
 class StudentItem(Resource):
-    @cache.cached()
+    @cache.cached(make_cache_key=request_path_cache_key)
     def get(self, student):
         """Returns the representation of the student
         :param student: takes a student object containing the information about the student"""

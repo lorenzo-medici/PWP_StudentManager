@@ -8,10 +8,11 @@ from werkzeug.routing import BaseConverter
 from studentmanager import cache
 from studentmanager import db
 from studentmanager.models import Course, require_admin_key
+from studentmanager.utils import request_path_cache_key
 
 
 class CourseCollection(Resource):
-    @cache.cached()
+    @cache.cached(make_cache_key=request_path_cache_key)
     def get(self):
         """Get the list of courses from the database"""
         courses = Course.query.all()
@@ -63,7 +64,7 @@ class CourseCollection(Resource):
 
 
 class CourseItem(Resource):
-    @cache.cached()
+    @cache.cached(make_cache_key=request_path_cache_key)
     def get(self, course):
         """Returns the representation of the course
         :param course: takes a student object containing the information about the student"""

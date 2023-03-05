@@ -1,6 +1,8 @@
 import random
 import re
 
+from flask import request
+
 
 # information on how the ssn is generated and/or validate can be found at
 # https://dvv.fi/en/personal-identity-code
@@ -56,3 +58,12 @@ def generate_ssn(date):
     partial_ssn = f'{date_string}{century_character}{serial_number:03d}'
     control_character = generate_control_character(partial_ssn)
     return f'{partial_ssn}{control_character}'
+
+
+def request_path_cache_key(*args, **kwargs):
+    """
+    Helper function for caching Resources. Fix for cache.cached not working with request.path as default.
+    Used in all get functions in the application
+    :return: returns a string which is the desired cache key "request.path"
+    """
+    return request.path
