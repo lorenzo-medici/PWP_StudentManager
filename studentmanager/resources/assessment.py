@@ -2,8 +2,6 @@ from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
 from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import NotFound
-from werkzeug.routing import BaseConverter
 
 from studentmanager import db, cache
 from studentmanager.models import Assessment, require_assessments_key
@@ -95,8 +93,7 @@ class StudentAssessmentItem(Resource):
             .filter_by(course_id=course.course_id) \
             .first()
 
-        # TODO remove short_form
-        return assessment.serialize(short_form=True)
+        return assessment.serialize()
 
     @require_assessments_key
     def put(self, student, course):
@@ -104,9 +101,9 @@ class StudentAssessmentItem(Resource):
         Returns 400 if the requests is not a valid json request or if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (code is already present)"""
 
-        assessment = Assessment.query\
-            .filter_by(student_id=student.student_id)\
-            .filter_by(course_id=course.course_id)\
+        assessment = Assessment.query \
+            .filter_by(student_id=student.student_id) \
+            .filter_by(course_id=course.course_id) \
             .first()
 
         try:
@@ -138,9 +135,9 @@ class StudentAssessmentItem(Resource):
     def delete(self, student, course):
         """Deletes the existing assessment"""
 
-        assessment = Assessment.query\
-            .filter_by(student_id=student.student_id)\
-            .filter_by(course_id=course.course_id)\
+        assessment = Assessment.query \
+            .filter_by(student_id=student.student_id) \
+            .filter_by(course_id=course.course_id) \
             .first()
 
         db.session.delete(assessment)
@@ -157,13 +154,12 @@ class CourseAssessmentItem(Resource):
     def get(self, student, course):
         """Returns the representation of the assessment"""
 
-        assessment = Assessment.query\
-            .filter_by(student_id=student.student_id)\
-            .filter_by(course_id=course.course_id)\
+        assessment = Assessment.query \
+            .filter_by(student_id=student.student_id) \
+            .filter_by(course_id=course.course_id) \
             .first()
-            
-        # TODO remove short_form
-        return assessment.serialize(short_form=True)
+
+        return assessment.serialize()
 
     @require_assessments_key
     def put(self, student, course):
@@ -171,9 +167,9 @@ class CourseAssessmentItem(Resource):
        Returns 400 if the requests is not a valid json request or if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (code is already present)"""
 
-        assessment = Assessment.query\
-            .filter_by(student_id=student.student_id)\
-            .filter_by(course_id=course.course_id)\
+        assessment = Assessment.query \
+            .filter_by(student_id=student.student_id) \
+            .filter_by(course_id=course.course_id) \
             .first()
 
         try:
@@ -205,9 +201,9 @@ class CourseAssessmentItem(Resource):
     def delete(self, student, course):
         """Deletes the existing assessment"""
 
-        assessment = Assessment.query\
-            .filter_by(student_id=student.student_id)\
-            .filter_by(course_id=course.course_id)\
+        assessment = Assessment.query \
+            .filter_by(student_id=student.student_id) \
+            .filter_by(course_id=course.course_id) \
             .first()
 
         db.session.delete(assessment)

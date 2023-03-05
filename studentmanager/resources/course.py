@@ -29,8 +29,6 @@ class CourseCollection(Resource):
         Returns 400 if the format of the request is not valid, or the ects value is not integer.
         Returns 409 if an IntegrityError happens (code is already present)
         Returns 201 and a location header containing the uri of the newly added course"""
-        if not request.json:
-            return "Unsupported media type", 415
 
         try:
             validate(request.json, Course.json_schema())
@@ -78,8 +76,6 @@ class CourseItem(Resource):
         Returns 400 if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (code is already present)
         Returns 204 if the course has correctly been updated"""
-        if not request.json:
-            return "Unsupported media type", 415
 
         try:
             validate(request.json, Course.json_schema())

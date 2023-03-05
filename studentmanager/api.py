@@ -24,8 +24,3 @@ api.add_resource(CourseAssessmentCollection,
                  "/courses/<course:course>/assessments/")
 api.add_resource(CourseAssessmentItem,
                  "/courses/<course:course>/assessments/<student:student>/")
-
-
-@api_bp.route("/")
-def index():
-    return ""

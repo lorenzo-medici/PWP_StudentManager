@@ -33,8 +33,6 @@ class StudentCollection(Resource):
         Returns 400 if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (ssn is invalid or already present, date_of_birth is not in the past)
         Returns 201 and a location header containing the uri of the newly added student"""
-        if not request.json:
-            return "Unsupported media type", 415
 
         student = Student()
 
@@ -84,8 +82,6 @@ class StudentItem(Resource):
         Returns 400 if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (ssn is invalid or already present, date_of_birth is not in the past)
         Returns 204 if the student has correctly been updated"""
-        if not request.json:
-            return "Unsupported media type", 415
 
         try:
             validate(request.json, Student.json_schema(),
