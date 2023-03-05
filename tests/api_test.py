@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import shutil
 import tempfile
 
 import pytest
@@ -33,9 +34,11 @@ class AuthHeaderClient(FlaskClient):
 @pytest.fixture
 def client():
     db_fd, db_fname = tempfile.mkstemp()
+    cache_dir_name = tempfile.mkdtemp()
     config = {
         "SQLALCHEMY_DATABASE_URI": "sqlite:///" + db_fname,
-        "TESTING": True
+        "TESTING": True,
+        "CACHE_DIR": cache_dir_name
     }
 
     app = create_app(config)
@@ -52,6 +55,8 @@ def client():
 
     os.close(db_fd)
     os.unlink(db_fname)
+
+    shutil.rmtree(cache_dir_name)
 
 
 def _populate_db():
@@ -457,7 +462,6 @@ def _get_existing_student_json():
 
 
 class TestAssessmentCollection(object):
-
     ASSESSMENT_RESOURCE_URL = "/api/assessments/"
 
     COURSE_RESOURCE_URL_PREFIX = "/api/courses/"
@@ -562,7 +566,8 @@ class TestAssessmentItem(object):
     def test_course_get(self, client):
         """Succesfully gets an existing assessment"""
         resp = client.get(self.COURSE_RESOURCE_URL_PREFIX +
-                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.TEST_STUDENT_ID) + "/")
+                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                          str(self.TEST_STUDENT_ID) + "/")
         assert resp.status_code == 200
         body = json.loads(resp.data)
         assert body["course_id"] == 1
@@ -584,7 +589,8 @@ class TestAssessmentItem(object):
     def test_get_course_invalid_url(self, client):
         """Tries to get a non existent assessment"""
         resp = client.get(self.COURSE_RESOURCE_URL_PREFIX +
-                          str(self.NONEXISTENT_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.NONEXISTENT_STUDENT_ID) + "/")
+                          str(self.NONEXISTENT_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                          str(self.NONEXISTENT_STUDENT_ID) + "/")
         assert resp.status_code == 404
 
     def test_get_student_invalid_url(self, client):
@@ -598,7 +604,8 @@ class TestAssessmentItem(object):
         valid = _get_existing_assessment_json()
         valid["grade"] = 1
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
-                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.TEST_STUDENT_ID) + "/", json=valid)
+                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                          str(self.TEST_STUDENT_ID) + "/", json=valid)
         assert resp.status_code == 204
 
     def test_student_put(self, client):
@@ -628,7 +635,8 @@ class TestAssessmentItem(object):
     def test_course_put_wrong_content_type(self, client):
         """Tries to put a request with wrong content type"""
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
-                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.TEST_STUDENT_ID) + "/", data="notjson",
+                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                          str(self.TEST_STUDENT_ID) + "/", data="notjson",
                           headers=Headers({"Content-Type": "text"}))
         assert resp.status_code in (400, 415)
 
@@ -643,7 +651,8 @@ class TestAssessmentItem(object):
         """Tries to edit a non existent assessment"""
         valid = _get_existing_assessment_json()
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
-                          str(self.NONEXISTENT_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.NONEXISTENT_STUDENT_ID) + "/", json=valid)
+                  str(self.NONEXISTENT_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                  str(self.NONEXISTENT_STUDENT_ID) + "/", json=valid)
         assert resp.status_code == 404
 
     def test_student_ut_invalid_url(self, client):
@@ -659,7 +668,8 @@ class TestAssessmentItem(object):
         valid['student_id'] = "2"
         valid["course_id"] = "2"
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
-                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.TEST_STUDENT_ID) + "/", json=valid)
+                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                          str(self.TEST_STUDENT_ID) + "/", json=valid)
         assert resp.status_code == 409
 
     def test_student_put_conflict_course_id_and_student_id(self, client):
@@ -676,7 +686,8 @@ class TestAssessmentItem(object):
         valid = _get_existing_assessment_json()
         valid.pop("grade")
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
-                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.TEST_STUDENT_ID) + "/", json=valid)
+                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                          str(self.TEST_STUDENT_ID) + "/", json=valid)
         assert resp.status_code == 400
 
     def test_student_put_invalid_schema(self, client):
@@ -692,7 +703,8 @@ class TestAssessmentItem(object):
         valid = _get_existing_assessment_json()
         valid["date"] = 'XXXXXX'
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
-                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.TEST_STUDENT_ID) + "/", json=valid)
+                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                          str(self.TEST_STUDENT_ID) + "/", json=valid)
         assert resp.status_code == 400
 
     def test_student_put_invalid_date(self, client):
@@ -706,19 +718,23 @@ class TestAssessmentItem(object):
     def test_course_delete(self, client):
         """Successfully deletes an existing assessment"""
         resp = client.delete(self.COURSE_RESOURCE_URL_PREFIX +
-                             str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.TEST_STUDENT_ID) + "/")
+                             str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                             str(self.TEST_STUDENT_ID) + "/")
         assert resp.status_code == 204
-
+        
     def test_student_delete(self, client):
         """Successfully deletes an existing assessment"""
         resp = client.delete(self.STUDENT_RESOURCE_URL_PREFIX +
-                             str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.TEST_STUDENT_ID) + "/")
+                             str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                             str(self.TEST_STUDENT_ID) + "/")
         assert resp.status_code == 204
+
 
     def test_course_delete_invalid_url(self, client):
         """Tries to delete a non existent course"""
         resp = client.delete(self.COURSE_RESOURCE_URL_PREFIX +
-                             str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX + str(self.NONEXISTENT_STUDENT_ID) + "/")
+                             str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
+                             str(self.NONEXISTENT_STUDENT_ID) + "/")
         assert resp.status_code == 404
 
     def test_student_delete_invalid_url(self, client):

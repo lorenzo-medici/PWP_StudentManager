@@ -69,16 +69,11 @@ class Assessment(db.Model):
                'student_id': self.student_id,
                'grade': self.grade,
                'date': self.date.strftime('%Y-%m-%d')}
-        if not short_form:
-            doc["assessments"] = [a.serialize(
-                short_form=True) for a in self.assessments]
 
         return doc
 
     # DESERIALIZER
     def deserialize(self, doc):
-        print("doc")
-        print(doc)
         self.course_id = doc["course_id"]
         self.student_id = doc["student_id"]
         self.grade = doc["grade"]
@@ -160,6 +155,11 @@ class Student(db.Model):
 
     # SERIALIZER
     def serialize(self, short_form=False):
+        """
+        Transforms a student object in a json file
+        :param short_form: bool parameter that determines if json file has to contain assessments
+        :return doc: return a json file containing the information about the student
+        """
         doc = {'student_id': self.student_id,
                'first_name': self.first_name,
                'last_name': self.last_name,
@@ -173,6 +173,11 @@ class Student(db.Model):
 
     # DESERIALIZER
     def deserialize(self, doc):
+        """
+        Deserialize a json file converting each field in one of the field of a student object
+        :param doc: Json file
+        :raise ValueError: if the date_of_birth parameter in doc is not a valid iso format
+        """
         self.first_name = doc["first_name"]
         self.last_name = doc["last_name"]
         self.date_of_birth = datetime.date.fromisoformat(doc["date_of_birth"])
@@ -238,6 +243,11 @@ class Course(db.Model):
     # SERIALIZATION METHODS
 
     def serialize(self, short_form=False):
+        """
+        Transforms a course object in a json file
+        :param short_form: bool parameter that determines if json file has to contain assessments
+        :return doc: return a json file containing the information about the course
+        """
         doc = {
             "course_id": self.course_id,
             "title": self.title,
@@ -252,6 +262,10 @@ class Course(db.Model):
         return doc
 
     def deserialize(self, doc):
+        """
+        Deserialize a json file converting each field in one of the field of a course object
+        :param doc: Json file
+        """
         self.title = doc["title"]
         self.teacher = doc["teacher"]
         self.code = doc["code"]
@@ -287,8 +301,10 @@ class Course(db.Model):
 
 
 class ApiKey(db.Model):
-    key = db.Column(db.String(32), nullable=False,
-                    unique=True, primary_key=True)
+    """
+    A class representing the API keys saved in the database. Keys can be admin (write permission to all resources) or not (write permission only on assessments)
+    """
+    key = db.Column(db.String(32), nullable=False, unique=True, primary_key=True)
     admin = db.Column(db.Boolean, default=False)
 
     @staticmethod
@@ -298,6 +314,12 @@ class ApiKey(db.Model):
 
 # From the Sensorhub example project
 def require_admin_key(func):
+    """
+    Decorator function that runs the parameter function only if the request contains an admin key
+    :param func: function to be executed if the request contains a key with admin privileges
+    :raise Forbidden: if the request doesn't contain an admin key
+    """
+
     def wrapper(*args, **kwargs):
         key_hash = ApiKey.key_hash(request.headers.get(
             "Studentmanager-Api-Key", "").strip())
@@ -311,6 +333,12 @@ def require_admin_key(func):
 
 # From the Sensorhub example project
 def require_assessments_key(func):
+    """
+    Decorator function that runs the parameter function only if the request contains an API key
+    :param func: function to be executed if the request contains a valid key
+    :raise Forbidden: if the request doesn't contain an API key'
+    """
+
     def wrapper(*args, **kwargs):
         key_hash = ApiKey.key_hash(request.headers.get(
             "Studentmanager-Api-Key", "").strip())
@@ -442,7 +470,6 @@ def run_tests():
 @click.command("masterkey")
 @with_appcontext
 def generate_master_key():
-
     # admin key
     token = secrets.token_urlsafe()
     db_key = ApiKey(
@@ -462,3 +489,4 @@ def generate_master_key():
     print("assessment key: " + token)
 
     db.session.commit()
+    print(token)

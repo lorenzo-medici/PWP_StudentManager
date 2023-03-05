@@ -1,4 +1,3 @@
-import datetime
 from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
@@ -6,16 +5,27 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import BaseConverter
 
-from studentmanager import db
+from studentmanager import db, cache
 from studentmanager.models import Assessment, require_assessments_key
+from studentmanager.utils import request_path_cache_key
+
+
+def clear_cache(assessment):
+    course_assessments_url = url_for('api.courseassessmentcollection', course=assessment.course)
+    student_assessments_url = url_for('api.studentassessmentcollection', student=assessment.student)
+    cache.delete_many(
+        request.path,
+        course_assessments_url,
+        student_assessments_url
+    )
 
 
 class CourseAssessmentCollection(Resource):
 
+    @cache.cached(make_cache_key=request_path_cache_key)
     def get(self, course):
         """Get the list of assessments from the database"""
-        assessments = Assessment.query.filter_by(
-            course_id=course.course_id).all()
+        assessments = Assessment.query.filter_by(course_id=course.course_id).all()
         assessments_list = [c.serialize(short_form=True) for c in assessments]
 
         return assessments_list
@@ -23,10 +33,10 @@ class CourseAssessmentCollection(Resource):
 
 class StudentAssessmentCollection(Resource):
 
+    @cache.cached(make_cache_key=request_path_cache_key)
     def get(self, student):
         """Get the list of assessments from the database"""
-        assessments = Assessment.query.filter_by(
-            student_id=student.student_id).all()
+        assessments = Assessment.query.filter_by(student_id=student.student_id).all()
         assessments_list = [c.serialize(short_form=True) for c in assessments]
 
         return assessments_list
@@ -64,22 +74,26 @@ class AssessmentCollection(Resource):
             db.session.rollback()
             return f"Assessment already exists with course_id '{assessment.course_id}' and student_id '{assessment.student_id}'", 409
 
+        clear_cache(assessment)
+
         return Response(
             status=201,
             headers={
-                'Location': url_for('api.courseassessmentitem', course=assessment, student=assessment)
+                'Location': url_for('api.courseassessmentitem', course=assessment.course, student=assessment.student)
             }
         )
 
 
 class StudentAssessmentItem(Resource):
 
+    @cache.cached(make_cache_key=request_path_cache_key)
     def get(self, student, course):
         """Returns the representation of the assessment"""
 
-        assessment = Assessment.query.filter_by(
-            student_id=student.student_id).filter_by(
-            course_id=course.course_id).first()
+        assessment = Assessment.query \
+            .filter_by(student_id=student.student_id) \
+            .filter_by(course_id=course.course_id) \
+            .first()
 
         # TODO remove short_form
         return assessment.serialize(short_form=True)
@@ -90,9 +104,10 @@ class StudentAssessmentItem(Resource):
         Returns 400 if the requests is not a valid json request or if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (code is already present)"""
 
-        assessment = Assessment.query.filter_by(
-            student_id=student.student_id).filter_by(
-            course_id=course.course_id).first()
+        assessment = Assessment.query\
+            .filter_by(student_id=student.student_id)\
+            .filter_by(course_id=course.course_id)\
+            .first()
 
         try:
             validate(request.json, Assessment.json_schema())
@@ -115,31 +130,38 @@ class StudentAssessmentItem(Resource):
             db.session.rollback()
             return f"Assessment already exists with course_id '{assessment.course_id}' and student_id '{assessment.student_id}'", 409
 
+        clear_cache(assessment)
+
         return Response(status=204)
 
     @require_assessments_key
     def delete(self, student, course):
         """Deletes the existing assessment"""
 
-        assessment = Assessment.query.filter_by(
-            student_id=student.student_id).filter_by(
-            course_id=course.course_id).first()
+        assessment = Assessment.query\
+            .filter_by(student_id=student.student_id)\
+            .filter_by(course_id=course.course_id)\
+            .first()
 
         db.session.delete(assessment)
         db.session.commit()
+
+        clear_cache(assessment)
 
         return Response(status=204)
 
 
 class CourseAssessmentItem(Resource):
 
+    @cache.cached(make_cache_key=request_path_cache_key)
     def get(self, student, course):
         """Returns the representation of the assessment"""
 
-        assessment = Assessment.query.filter_by(
-            student_id=student.student_id).filter_by(
-            course_id=course.course_id).first()
-
+        assessment = Assessment.query\
+            .filter_by(student_id=student.student_id)\
+            .filter_by(course_id=course.course_id)\
+            .first()
+            
         # TODO remove short_form
         return assessment.serialize(short_form=True)
 
@@ -149,9 +171,10 @@ class CourseAssessmentItem(Resource):
        Returns 400 if the requests is not a valid json request or if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (code is already present)"""
 
-        assessment = Assessment.query.filter_by(
-            student_id=student.student_id).filter_by(
-            course_id=course.course_id).first()
+        assessment = Assessment.query\
+            .filter_by(student_id=student.student_id)\
+            .filter_by(course_id=course.course_id)\
+            .first()
 
         try:
             validate(request.json, Assessment.json_schema())
@@ -174,17 +197,22 @@ class CourseAssessmentItem(Resource):
             db.session.rollback()
             return f"Assessment already exists with course_id '{assessment.course_id}' and student_id '{assessment.student_id}'", 409
 
+        clear_cache(assessment)
+
         return Response(status=204)
 
     @require_assessments_key
     def delete(self, student, course):
         """Deletes the existing assessment"""
 
-        assessment = Assessment.query.filter_by(
-            student_id=student.student_id).filter_by(
-            course_id=course.course_id).first()
+        assessment = Assessment.query\
+            .filter_by(student_id=student.student_id)\
+            .filter_by(course_id=course.course_id)\
+            .first()
 
         db.session.delete(assessment)
         db.session.commit()
+
+        clear_cache(assessment)
 
         return Response(status=204)
