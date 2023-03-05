@@ -48,11 +48,9 @@ def create_app(test_config=None):
     from studentmanager.api import api_bp
     from studentmanager.resources.course import CourseConverter
     from studentmanager.resources.student import StudentConverter
-    from studentmanager.resources.assessment import AssessmentConverter
 
     app.url_map.converters["course"] = CourseConverter
     app.url_map.converters["student"] = StudentConverter
-    app.url_map.converters["assessment"] = AssessmentConverter
 
     app.register_blueprint(api_bp)
 
