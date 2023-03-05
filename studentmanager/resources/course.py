@@ -68,8 +68,7 @@ class CourseItem(Resource):
     def get(self, course):
         """Returns the representation of the course
         :param course: takes a student object containing the information about the student"""
-        # TODO remove short_form
-        return course.serialize(short_form=True)
+        return course.serialize()
 
     @require_admin_key
     def put(self, course):

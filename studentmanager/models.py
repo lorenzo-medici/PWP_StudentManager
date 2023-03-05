@@ -69,9 +69,6 @@ class Assessment(db.Model):
                'student_id': self.student_id,
                'grade': self.grade,
                'date': self.date.strftime('%Y-%m-%d')}
-        if not short_form:
-            doc["assessments"] = [a.serialize(
-                short_form=True) for a in self.assessments]
 
         return doc
 
@@ -473,7 +470,6 @@ def run_tests():
 @click.command("masterkey")
 @with_appcontext
 def generate_master_key():
-
     # admin key
     token = secrets.token_urlsafe()
     db_key = ApiKey(
