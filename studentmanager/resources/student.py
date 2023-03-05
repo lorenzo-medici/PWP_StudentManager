@@ -39,7 +39,8 @@ class StudentCollection(Resource):
         student = Student()
 
         try:
-            validate(request.json, Student.json_schema(), format_checker=Draft7Validator.FORMAT_CHECKER)
+            validate(request.json, Student.json_schema(),
+                     format_checker=Draft7Validator.FORMAT_CHECKER)
 
             student.deserialize(request.json)
 
@@ -88,7 +89,8 @@ class StudentItem(Resource):
             return "Unsupported media type", 415
 
         try:
-            validate(request.json, Student.json_schema(), format_checker=Draft7Validator.FORMAT_CHECKER)
+            validate(request.json, Student.json_schema(),
+                     format_checker=Draft7Validator.FORMAT_CHECKER)
 
             student.deserialize(request.json)
 
