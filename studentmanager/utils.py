@@ -25,6 +25,11 @@ def generate_century_character(date):
 
 
 def generate_ssn(date):
+    """
+    Generate a valid ssn starting from the birthdate
+    :param date: datetime type indicating date of birth in the
+    :return: return a string indicating a valid ssn
+    """
     date_string = date.strftime("%d%m%y")
     century_character = generate_century_character(date)
     serial_number = random.randrange(2, 900)

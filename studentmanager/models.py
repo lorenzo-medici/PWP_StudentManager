@@ -105,6 +105,11 @@ class Student(db.Model):
 
     # SERIALIZER
     def serialize(self, short_form=False):
+        """
+        Transforms a student object in a json file
+        :param short_form: bool parameter that determines if json file has to contain assessments
+        :return doc: return a json file containing the information about the student
+        """
         doc = {'student_id': self.student_id,
                'first_name': self.first_name,
                'last_name': self.last_name,
@@ -117,6 +122,10 @@ class Student(db.Model):
 
     # DESERIALIZER
     def deserialize(self, doc):
+        """
+        Deserialize a json file converting each field in one of the field of a student object
+        :param doc: Json file
+        """
         self.first_name = doc["first_name"]
         self.last_name = doc["last_name"]
         self.date_of_birth = datetime.date.fromisoformat(doc["date_of_birth"])
@@ -180,6 +189,11 @@ class Course(db.Model):
     # SERIALIZATION METHODS
 
     def serialize(self, short_form=False):
+        """
+        Transforms a course object in a json file
+        :param short_form: bool parameter that determines if json file has to contain assessment
+        :return doc: return a json file containing the information about the course
+        """
         doc = {
             "course_id": self.course_id,
             "title": self.title,
@@ -193,6 +207,10 @@ class Course(db.Model):
         return doc
 
     def deserialize(self, doc):
+        """
+        Deserialize a json file converting each field in one of the field of a course object
+        :param doc: Json file
+        """
         self.title = doc["title"]
         self.teacher = doc["teacher"]
         self.code = doc["code"]
