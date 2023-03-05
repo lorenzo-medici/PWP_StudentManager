@@ -42,7 +42,7 @@ class CourseCollection(Resource):
 
         try:
             db.session.add(course)
-            db.session.commit()         
+            db.session.commit()
         except IntegrityError:
             db.session.rollback()
             return f"Course already exists with code '{course.code}'", 409
@@ -58,6 +58,7 @@ class CourseCollection(Resource):
         cache.delete(
             request.path
         )
+
 
 class CourseItem(Resource):
     @cache.cached()
@@ -101,7 +102,7 @@ class CourseItem(Resource):
         db.session.commit()
         self._clear_cache()
         return Response(status=204)
-    
+
     def _clear_cache(self):
         collection_path = url_for('api.coursecollection')
         cache.delete_many(

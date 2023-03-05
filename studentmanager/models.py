@@ -77,6 +77,8 @@ class Assessment(db.Model):
 
     # DESERIALIZER
     def deserialize(self, doc):
+        print("doc")
+        print(doc)
         self.course_id = doc["course_id"]
         self.student_id = doc["student_id"]
         self.grade = doc["grade"]
@@ -365,6 +367,13 @@ def generate_test_data():
         ects=8
     )
 
+    c3 = Course(
+        title='Advanced Defence Against the Dark Arts',
+        teacher='Professur Severus Snape',
+        code='006032',
+        ects=8
+    )
+
     a_s1_c1 = Assessment(
         student=s1,
         course=c1,
@@ -413,6 +422,7 @@ def generate_test_data():
 
     db.session.add(c1)
     db.session.add(c2)
+    db.session.add(c3)
 
     db.session.add(a_s1_c1)
     db.session.add(a_s1_c2)

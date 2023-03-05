@@ -1,3 +1,4 @@
+import datetime
 from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
@@ -19,42 +20,6 @@ class CourseAssessmentCollection(Resource):
 
         return assessments_list
 
-    @require_assessments_key
-    def post(self):
-        """Adds a new assessment.
-        Returns 415 if the requests is not a valid json request.
-        Returns 400 if the format of the request is not valid, or the ects value is not integer.
-        Returns 409 if an IntegrityError happens (code is already present)"""
-        if not request.json:
-            return "Unsupported media type", 415
-
-        try:
-            validate(request.json, Assessment.json_schema())
-        except ValidationError as exc:
-            return "JSON format is not valid", 400
-
-        assessment = Assessment()
-        assessment.deserialize(request.json)
-
-        if not isinstance(assessment.grade, int):
-            return "Grade value must be an integer", 400
-
-        assessment.date = datetime.date.today()
-
-        try:
-            db.session.add(assessment)
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
-            return f"Assessment already exists with course_id '{assessment.course_id}' and student_id '{assessment.student_id}'", 409
-
-        return Response(
-            status=201,
-            headers={
-                'Location': url_for('api.assessmentitem', assessment=assessment)
-            }
-        )
-
 
 class StudentAssessmentCollection(Resource):
 
@@ -66,6 +31,9 @@ class StudentAssessmentCollection(Resource):
 
         return assessments_list
 
+
+class AssessmentCollection(Resource):
+
     @require_assessments_key
     def post(self):
         """Adds a new assessment.
@@ -77,20 +45,23 @@ class StudentAssessmentCollection(Resource):
 
         try:
             validate(request.json, Assessment.json_schema())
+
+            assessment = Assessment()
+
+            assessment.deserialize(request.json)
+
+            if not isinstance(assessment.grade, int):
+                return "Grade value must be an integer", 400
+
         except ValidationError as exc:
             return "JSON format is not valid", 400
-
-        assessment = Assessment()
-        assessment.deserialize(request.json)
-
-        if not isinstance(assessment.grade, int):
-            return "Grade value must be an integer", 400
-
-        assessment.date = datetime.date.today()
+        except ValueError:
+            return f'Date_of_birth not in iso format', 400
 
         try:
             db.session.add(assessment)
             db.session.commit()
+
         except IntegrityError:
             db.session.rollback()
             return f"Assessment already exists with course_id '{assessment.course_id}' and student_id '{assessment.student_id}'", 409
@@ -98,7 +69,7 @@ class StudentAssessmentCollection(Resource):
         return Response(
             status=201,
             headers={
-                'Location': url_for('api.assessmentitem', assessment=assessment)
+                'Location': url_for('api.courseassessmentitem', course=assessment, student=assessment)
             }
         )
 
@@ -137,13 +108,17 @@ class StudentAssessmentItem(Resource):
 
         try:
             validate(request.json, Assessment.json_schema())
+
+            assessment.deserialize(request.json)
+
+            if not isinstance(assessment.grade, int):
+                return "Grade value must be an integer", 400
+
         except ValidationError as exc:
             return str(exc), 400
 
-        assessment.deserialize(request.json)
-
-        if not isinstance(assessment.grade, int):
-            return "Grade value must be an integer", 400
+        except ValueError:
+            return f'Date_of_birth not in iso format', 400
 
         try:
             db.session.add(assessment)
@@ -205,11 +180,17 @@ class CourseAssessmentItem(Resource):
 
         try:
             validate(request.json, Assessment.json_schema())
+
+            assessment.deserialize(request.json)
+
+            if not isinstance(assessment.grade, int):
+                return "Grade value must be an integer", 400
+
         except ValidationError as exc:
             return str(exc), 400
 
-        assessment.deserialize(request.json)
-
+        except ValueError:
+            return f'Date_of_birth not in iso format', 400
         if not isinstance(assessment.grade, int):
             return "Grade value must be an integer", 400
 
@@ -245,8 +226,6 @@ class AssessmentConverter(BaseConverter):
 
     def to_python(self, assessment_id):
 
-        print(assessment_id)
-
         try:
             student_id, course_id = assessment_id.split("_")
             int_student_id = int(student_id)
@@ -261,5 +240,5 @@ class AssessmentConverter(BaseConverter):
         return db_assessment
 
     def to_url(self, value):
-        print(value)
+
         return str(value.course_id + "_" + value.student_id)
