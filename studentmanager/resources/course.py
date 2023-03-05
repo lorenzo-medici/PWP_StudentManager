@@ -5,9 +5,9 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import BaseConverter
 
+from studentmanager import cache
 from studentmanager import db
 from studentmanager.models import Course, require_admin_key
-from studentmanager import cache
 
 
 class CourseCollection(Resource):
@@ -125,7 +125,7 @@ class CourseConverter(BaseConverter):
         Converts a course_id in a course object by retrieving the information from the database
         :param course_id: str representing the course id
         raises a NotFound error if it is impossible to convert the string in an int or if the course is not found
-        returns a course object corresponding to the course_id
+        :return: a course object corresponding to the course_id
         """
         try:
             int_id = int(course_id)
@@ -141,6 +141,6 @@ class CourseConverter(BaseConverter):
         """
         Transforms a course object in a value usable in the URI
         :param value: course Object
-        returns the course_id
+        :return: the course_id
         """
         return str(value.course_id)

@@ -5,8 +5,8 @@ from jsonschema.validators import Draft7Validator
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import NotFound
 from werkzeug.routing import BaseConverter
-from studentmanager import cache
 
+from studentmanager import cache
 from studentmanager import db
 from studentmanager.models import Student, require_admin_key
 
@@ -130,7 +130,7 @@ class StudentConverter(BaseConverter):
         Converts a student_id in a student object by retrieving the information from the database
         :param student_id: str representing the student id
         raises a NotFound error if it is impossible to convert the string in an int or if the student is not found
-        returns a student object corresponding to the student_id
+        :return: a student object corresponding to the student_id
         """
         try:
             int_id = int(student_id)
@@ -145,6 +145,6 @@ class StudentConverter(BaseConverter):
         """
         Transforms a student object in a value usable in the URI
         :param db_student: Student Object
-        returns the student_id
+        :return: the student_id
         """
         return str(db_student.student_id)

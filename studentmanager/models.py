@@ -125,6 +125,7 @@ class Student(db.Model):
         """
         Deserialize a json file converting each field in one of the field of a student object
         :param doc: Json file
+        :raise ValueError: if the date_of_birth parameter in doc is not a valid iso format
         """
         self.first_name = doc["first_name"]
         self.last_name = doc["last_name"]
@@ -191,7 +192,7 @@ class Course(db.Model):
     def serialize(self, short_form=False):
         """
         Transforms a course object in a json file
-        :param short_form: bool parameter that determines if json file has to contain assessment
+        :param short_form: bool parameter that determines if json file has to contain assessments
         :return doc: return a json file containing the information about the course
         """
         doc = {
@@ -246,6 +247,9 @@ class Course(db.Model):
 
 
 class ApiKey(db.Model):
+    """
+    A class representing the API keys saved in the database. Keys can be admin (write permission to all resources) or not (write permission only on assessments)
+    """
     key = db.Column(db.String(32), nullable=False, unique=True, primary_key=True)
     admin = db.Column(db.Boolean, default=False)
 
@@ -256,6 +260,12 @@ class ApiKey(db.Model):
 
 # From the Sensorhub example project
 def require_admin_key(func):
+    """
+    Decorator function that runs the parameter function only if the request contains an admin key
+    :param func: function to be executed if the request contains a key with admin privileges
+    :raise Forbidden: if the request doesn't contain an admin key
+    """
+
     def wrapper(*args, **kwargs):
         key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key", "").strip())
         db_key = ApiKey.query.filter_by(admin=True).first()
@@ -269,6 +279,12 @@ def require_admin_key(func):
 # From the Sensorhub example project
 
 def require_assessments_key(func):
+    """
+    Decorator function that runs the parameter function only if the request contains an API key
+    :param func: function to be executed if the request contains a valid key
+    :raise Forbidden: if the request doesn't contain an API key'
+    """
+
     def wrapper(*args, **kwargs):
         key_hash = ApiKey.key_hash(request.headers.get("Studentmanager-Api-Key", "").strip())
         db_keys = ApiKey.query.all()
