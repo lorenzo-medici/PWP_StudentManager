@@ -1,39 +1,106 @@
 # PWP SPRING 2023
+
 # StudentManager
+
 # Group information
+
 * Student 1. Pranav Bahulekar \<pranav.bahulekar@student.oulu.fi\>
 * Student 2. Lorenzo Medici \<lorenzo.medici@student.oulu.fi\>
 * Student 3. Alessandro Nardi \<alessandro.nardi@student.oulu.fi\>
 * Student 4. Dániel Szabó \<daniel.szabo@student.oulu.fi\>
 
-# Database
 
-## Models
-The `model.py` file containing the classes can be found in the `model/` subfolder.
+# Dependencies
 
-## Dependencies
 The dependencies for this project are:
 
-|Module|Version|
-|:---:|:---:|
-|Flask|2.2.2|
-|flask_sqlalchemy|3.0.3|
-|SQLAlchemy|2.0.2|
-|click|8.1.3|
+|      Module      | Version |
+|:----------------:|:-------:|
+|      Flask       |  2.2.2  |
+| flask_sqlalchemy |  3.0.3  |
+|    SQLAlchemy    |  2.0.2  |
+|      click       |  8.1.3  |
+|  Flask_RESTful   |  0.3.9  |
+|  Flask_Caching   |  2.0.2  |
+|    jsonschema    | 4.17.3  |
+|     Werkzeug     |  2.2.2  |
+|    setuptools    | 65.5.1  |
 
 These dependencies can be found in the file `requirements.txt` in the root directory of the project.
 
 These dependencies can be installed by executing `pip install -r requirements.txt` from the project's root directory.
-Alternatively, they can be installed by executing `pip install Flask==2.2.2 flask_sqlalchemy==3.0.3 SQLAlchemy==2.0.2 click==8.1.3`.
+Alternatively, they can be installed by
+executing `pip install <module>==<version>` for each module or adding all modules to the same command separated by spaces.
 
-If you want to execute the tests, you can append `pytest==7.2.1` to the last command, or to the `requirements.txt` file before executing `pip install -r requirements.txt`. Finally, `pytest` can be executed to run the tests.
 
 The database engine used is SQLite, version 3.40.1.
 
-## Inizialization and population
+# Database Inizialization and population
 
-The database can be initialized by executing `flask --app app init-db`.
-After that, it can be populated with test data by executing `flask --app app testgen`.
+The database can be initialized by executing `flask --app studentmanager init-db`.
+After that, it can be populated with test data by executing `flask --app studentmanager testgen`.
 The code for these functions is contained in the `model.py` file.
 
-A populated `db` file can be found in the `instance/` subfolder.
+The populated `db` file can be found in the `instance/` subfolder.
+
+# Running the application
+
+After the database has been initialized, the application can be started by executing `flask --app studentmanager run`.
+This will start a running server on the local machine, which will then be available by typing `http://127.0.0.1:5000/` in the browser's address bar.
+
+The root of the API will be available at `http://localhost:5000/api/`
+
+# Testing
+
+The dependencies for running the tests are:
+
+|      Module      | Version |
+|:----------------:|:-------:|
+|      pytest      |  7.2.1  |
+
+If `pip install -r requirements.txt` was executed, pytest is already installed. Otherwise, `pip install pytest==7.2.1` will need to be executed.
+
+In the `tests/` subfolder, some files containing functional tests can be found, these will test the model classes and database, and the API.
+To run the tests it is sufficient to execute `flask --app studentmanager testrun` from the project's root folder.
+
+## Testing results
+
+Running `pytest --cov studentmanager --cov-report term-missing` returned the following table:
+
+|                  Name                  | Stmts | Miss | Cover |          Missing           |
+|:--------------------------------------:|:-----:|:----:|:-----:|:--------------------------:|
+|       studentmanager/__init__.py       |  34   |  1   |  97%  |             25             |
+|         studentmanager/api.py          |  16   |  0   | 100%  |                            |
+|        studentmanager/models.py        |  180  |  37  |  79%  | 357, 363-462, 467, 474-492 |
+|  studentmanager/resources/__init__.py  |   0   |  0   | 100%  |                            |
+| studentmanager/resources/assessment.py |  108  |  0   | 100%  |                            |
+|   studentmanager/resources/course.py   |  78   |  0   | 100%  |                            |
+|  studentmanager/resources/student.py   |  77   |  0   | 100%  |                            |
+|        studentmanager/utils.py         |  23   |  0   | 100%  |                            |
+|                 TOTAL                  |  516  |  38  |  93%  |                            |
+
+The non-tested lines are:
+ - `__init__.py`: the line that initializes an app when no test_config is provided, only hit on a normal launch of the server
+ - `models.py`: the click functions responsible for initializing and populating the database, executing the tests and generating the admin key
+
+
+Implementing and running tests helped make the whole picture clear regarding all the implemented components and how they interact with each other.
+Some doubts and wrong implementations were corrected in regard to JSON schemas and validation, for example the correct definition of `date-time` fields and their validation.
+
+Tests were also important to make sure that the correct error code was returned for every possible error in the request, they also helped make the whole API coherent in this aspect.
+
+## Code quality
+
+To check for compliance with python's idiomatic rules, `pylint studentmanager` was executed, ignoring `no-member, import-outside-toplevel, no-self-use`.
+
+The resulting score is 9.69/10.
+
+The remaining warnings are:
+ - `studentmanager/utils.py`
+    - arguments `*args` and `*kwargs` unused in function `request_path_cache_key`. This function only returns `request.path` so any argument is ignored.
+ - `studentmanager/models.py`
+    - argument `key` in the validation functions (with the `@validates` decorator). The argument is not used because it represents the name of the field being validated. Since each function is responsible for one specific field, the parameter is ignored.
+    - argument `connection_record` in the `set_sqlite_pragma` function. The argument represents a `sqlalchemy.pool._ConnectionRecord` object, that represents a single connection.
+    - too few public methods for the ApiKey class. This is ignored since the only needed method for the class is the one that generates a digest of the API key.
+ - `studentmanager/resources/student.py`
+    - various cyclic import warnings related to the `create_app` function in `studentmanager/__init__.py`. These cannot be solved, but don't constitute an issue since they are inside the body of the function.
