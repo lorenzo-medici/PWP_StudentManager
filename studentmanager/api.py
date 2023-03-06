@@ -1,7 +1,12 @@
+"""
+This module instantiates the Api object and adds to it all the endpoints for the resources
+"""
+
 from flask import Blueprint
 from flask_restful import Api
 
-from studentmanager.resources.assessment import CourseAssessmentCollection, StudentAssessmentCollection, \
+from studentmanager.resources.assessment import \
+    CourseAssessmentCollection, StudentAssessmentCollection, \
     CourseAssessmentItem, StudentAssessmentItem, AssessmentCollection
 from studentmanager.resources.course import CourseCollection, CourseItem
 from studentmanager.resources.student import StudentCollection, StudentItem

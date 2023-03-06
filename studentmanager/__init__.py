@@ -1,3 +1,6 @@
+"""
+This module is used to retrieve a working Flask application complete with all the needed components
+"""
 # SOURCE: Project Layout on Lovelace
 
 import os
@@ -13,6 +16,13 @@ cache = Cache()
 # Based on http://flask.pocoo.org/docs/1.0/tutorial/factory/#the-application-factory
 # Modified to use Flask SQLAlchemy
 def create_app(test_config=None):
+    """
+    This function instantiates a Flask app and initializes all necessary components
+        (Cache, SQLAlchemy database, API), adds the click functions and assigns
+        the URL converters.
+    :param test_config: A dictionary containing the app configuration parameters to use for Tests
+    :return: a Flask app object
+    """
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY="dev",
@@ -35,7 +45,8 @@ def create_app(test_config=None):
 
     # MODELS and CLICK functions
     # import not at the top of the file to avoid circular imports
-    from studentmanager.models import generate_test_data, run_tests, init_db_command, generate_master_key
+    from studentmanager.models import \
+        generate_test_data, run_tests, init_db_command, generate_master_key
 
     app.cli.add_command(init_db_command)
     app.cli.add_command(generate_test_data)

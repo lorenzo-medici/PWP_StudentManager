@@ -1,3 +1,9 @@
+"""
+This module contains all the classes related to the Course resource:
+ - the collection of all courses
+ - a singular course
+ - the related URL converter
+"""
 from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
@@ -12,6 +18,9 @@ from studentmanager.utils import request_path_cache_key
 
 
 class CourseCollection(Resource):
+    """
+    Class that represents a collection of courses, reachable at '/api/courses/'
+    """
     @cache.cached(make_cache_key=request_path_cache_key)
     def get(self):
         """Get the list of courses from the database"""
@@ -32,7 +41,7 @@ class CourseCollection(Resource):
 
         try:
             validate(request.json, Course.json_schema())
-        except ValidationError as exc:
+        except ValidationError:
             return "JSON format is not valid", 400
 
         course = Course()
@@ -62,6 +71,10 @@ class CourseCollection(Resource):
 
 
 class CourseItem(Resource):
+    """
+    Class that represents a Course Resource, reachable at '/api/courses/<course_id>/'
+    Available methods are GET, PUT and DELETE
+    """
     @cache.cached(make_cache_key=request_path_cache_key)
     def get(self, course):
         """Returns the representation of the course
@@ -71,7 +84,8 @@ class CourseItem(Resource):
     @require_admin_key
     def put(self, course):
         """Edits the course's data.
-        :param course: student object that contains the information of the student that has to be edited
+        :param course: student object that contains the information of the student that has
+            to be edited
         Returns 415 if the requests is not a valid json request.
         Returns 400 if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (code is already present)
@@ -99,7 +113,8 @@ class CourseItem(Resource):
     @require_admin_key
     def delete(self, course):
         """Deletes the existing course
-        :param course: a student object that contains the information about the student that has to be modified
+        :param course: a student object that contains the information about the student that
+            has to be modified
         Returns: 204 if the course is correctly deleted"""
         db.session.delete(course)
         db.session.commit()
@@ -115,18 +130,24 @@ class CourseItem(Resource):
 
 
 class CourseConverter(BaseConverter):
+    """
+    URLConverter for course resource.
+    to_python takes a course_id and returns a Course object.
+    to_url takes a Course object and returns the corresponding course_id
+    """
 
-    def to_python(self, course_id):
+    def to_python(self, value):
         """
         Converts a course_id in a course object by retrieving the information from the database
-        :param course_id: str representing the course id
-        raises a NotFound error if it is impossible to convert the string in an int or if the course is not found
+        :param value: str representing the course id
+        raises a NotFound error if it is impossible to convert the string in an int or if the
+            course is not found
         :return: a course object corresponding to the course_id
         """
         try:
-            int_id = int(course_id)
-        except ValueError:
-            raise NotFound
+            int_id = int(value)
+        except ValueError as exc:
+            raise NotFound from exc
 
         db_course = Course.query.filter_by(course_id=int_id).first()
         if db_course is None:
@@ -137,6 +158,6 @@ class CourseConverter(BaseConverter):
         """
         Transforms a course object in a value usable in the URI
         :param value: course Object
-        :return: the course_id
+        :return: the value
         """
         return str(value.course_id)

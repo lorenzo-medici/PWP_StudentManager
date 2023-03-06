@@ -1,3 +1,14 @@
+"""
+This module contains all Model classes for our API, as well as click functions callable
+    from the command line
+The classes are:
+ - Assessment
+ - Student
+ - Course
+ - ApiKey
+The functions are responsible for initiliazing and populating the database, generating the
+    admin key, and running the tests
+"""
 import datetime
 import hashlib
 import secrets
@@ -15,17 +26,27 @@ from studentmanager import db
 from studentmanager.utils import is_valid_ssn
 
 
+# from the Exercise 1 webpage
+# https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/introduction-to-web-development/#sidenote-foreign-keys-in-sqlite
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
+    """
+    Called when a connection to the database is established.
+    Activates the constraints on foreign keys.
+    """
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
 
 class Assessment(db.Model):
-    """A class that represents an assessment. Contains references to the student and the course it is related to.
-    Additionally, stores the grade accomplished and the date of the assessment. The grade must be between 0 (Fail) and 5.
-    The date must be at most the current day-"""
+    """
+    A class that represents an assessment. Contains references to the student and the course
+        it is related to.
+    Additionally, stores the grade accomplished and the date of the assessment. The grade must be
+        between 0 (Fail) and 5.
+    The date must be at most the current day.
+    """
 
     # COLUMNS
     #
@@ -46,6 +67,14 @@ class Assessment(db.Model):
     # date is at most today
     @validates("date")
     def validate_date(self, key, date):
+        """
+        Checks that the given date is at most the current date
+        :param key: the name of the attribute to validate (date)
+        :param date: datetime.date object representing the date the assessment has
+            been conducted on
+        :return: the date if it is at most today
+        :raise AssertionError: if date is in the future
+        """
         assert date <= datetime.date.today()
         return date
 
@@ -64,7 +93,11 @@ class Assessment(db.Model):
     __tablename__ = 'assessments'
 
     # SERIALIZER
-    def serialize(self, short_form=False):
+    def serialize(self):
+        """
+        Serializes the current object into JSON representation
+        :return: the dictionary containing the object's attributes with realtive keys
+        """
         doc = {'course_id': self.course_id,
                'student_id': self.student_id,
                'grade': self.grade,
@@ -74,6 +107,13 @@ class Assessment(db.Model):
 
     # DESERIALIZER
     def deserialize(self, doc):
+        """
+        Populates the self object with the values contained in doc
+        :param doc: the dictionary containing all mandatory fields for this class
+            (refer to json_schema)
+        :return: nothing if the deserialization is successful
+        :raise ValueError: if the date is not in ISO format
+        """
         self.course_id = doc["course_id"]
         self.student_id = doc["student_id"]
         self.grade = doc["grade"]
@@ -82,6 +122,9 @@ class Assessment(db.Model):
     # JSON SCHEMA
     @staticmethod
     def json_schema():
+        """
+        :return: the valid JSON schema for the Assessment class
+        """
         schema = {
             "type": "object",
             "required": ["course_id", "student_id", "grade", "date"]
@@ -108,8 +151,12 @@ class Assessment(db.Model):
 
 
 class Student(db.Model):
-    """A class that represents a student. Contains personal information, as well as the assessments a student has, and all the courses they have assessments for.
-    The date of birth has to be in the past, and the Social Security Number has to be valid for the given date, as well as unique."""
+    """
+    A class that represents a student. Contains personal information, as well as the assessments a
+        student has, and all the courses they have assessments for.
+    The date of birth has to be in the past, and the Social Security Number has to be valid for the
+        given date, as well as unique.
+    """
 
     # COLUMNS
     #
@@ -129,12 +176,26 @@ class Student(db.Model):
 
     @validates("date_of_birth")
     def validate_date_of_birth(self, key, date_of_birth):
+        """
+        Checks that the given date_of_birth is before the current date
+        :param key: the name of the attribute to validate (date_of_birth)
+        :param date_of_birth: datetime.date object representing the date of birth to check
+        :return: the date if it is in the past
+        :raise AssertionError: if date_of_birth is not in the past
+        """
         assert date_of_birth < datetime.date.today()
         return date_of_birth
 
     # ssn is valid for given date_of_birth
     @validates("ssn")
     def validate_ssn(self, key, ssn):
+        """
+        Checks that the given ssn is valid for the date of birth of the object
+        :param key: the name of the attribute to validate (ssn)
+        :param ssn: the string representing the ssn
+        :return: the ssn if it is valid
+        :raise AssertionError: if the ssn is not valid
+        """
         assert is_valid_ssn(ssn, self.date_of_birth)
         return ssn
 
@@ -145,13 +206,17 @@ class Student(db.Model):
         "Assessment", cascade="all, delete-orphan", back_populates="student")
 
     # DIRECT REFERENCE
-    #   using Assessment as it was a db.Table, we have a reference to the list of courses the student
-    #   has assessments for
+    #   using Assessment as it was a db.Table, we have a reference to the list of courses
+    #   the student has assessments for
     # WARNING: changes will be reflected only after the Session has ended
-    #   info at https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#combining-association-object-with-many-to-many-access-patterns
+    # info at
+    # https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#combining-association-object-with-many-to-many-access-patterns
 
     courses = db.relationship(
-        "Course", secondary="assessments", back_populates="students", viewonly=True)
+        "Course",
+        secondary="assessments",
+        back_populates="students",
+        viewonly=True)
 
     # SERIALIZER
     def serialize(self, short_form=False):
@@ -166,8 +231,7 @@ class Student(db.Model):
                'date_of_birth': self.date_of_birth.strftime('%Y-%m-%d'),
                'ssn': self.ssn}
         if not short_form:
-            doc["assessments"] = [a.serialize(
-                short_form=True) for a in self.assessments]
+            doc["assessments"] = [a.serialize() for a in self.assessments]
 
         return doc
 
@@ -186,6 +250,9 @@ class Student(db.Model):
     # JSON SCHEMA
     @staticmethod
     def json_schema():
+        """
+        :return: the valid JSON schema for the Student class
+        """
         schema = {
             "type": "object",
             "required": ["first_name", "last_name", "ssn", "date_of_birth"]
@@ -212,7 +279,9 @@ class Student(db.Model):
 
 
 class Course(db.Model):
-    """A class that represents a course. Stores the course name, code, teacher and ects. Addittionally, stores all the assessments for the course, as well as all the students that have an assessment for it.
+    """A class that represents a course. Stores the course name, code, teacher and ects.
+        Additionally, stores all the assessments for the course, as well as all the students
+         that have an assessment for it.
     The ects value must be greater than and the course code must be unique."""
     # COLUMNS
     #
@@ -232,13 +301,17 @@ class Course(db.Model):
         "Assessment", cascade="all, delete-orphan", back_populates="course")
 
     # DIRECT REFERENCE
-    #   using Assessment as it was a db.Table, we have a reference to the list of students that have assessments
-    #   for this course
+    #   using Assessment as it was a db.Table, we have a reference to the list of students that
+    #   have assessments for this course
     # WARNING: changes will be reflected only after the Session has ended
-    #   info at: https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#combining-association-object-with-many-to-many-access-patterns
+    # info at:
+    # https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#combining-association-object-with-many-to-many-access-patterns
 
     students = db.relationship(
-        "Student", secondary="assessments", back_populates="courses", viewonly=True)
+        "Student",
+        secondary="assessments",
+        back_populates="courses",
+        viewonly=True)
 
     # SERIALIZATION METHODS
 
@@ -256,8 +329,7 @@ class Course(db.Model):
             "ects": self.ects
         }
         if not short_form:
-            doc["assessments"] = [a.serialize(
-                short_form=True) for a in self.assessments]
+            doc["assessments"] = [a.serialize() for a in self.assessments]
 
         return doc
 
@@ -275,6 +347,9 @@ class Course(db.Model):
 
     @staticmethod
     def json_schema():
+        """
+        :return: the valid JSON schema for the Course class
+        """
         schema = {
             "type": "object",
             "required": ["title", "teacher", "code", "ects"]
@@ -302,13 +377,23 @@ class Course(db.Model):
 
 class ApiKey(db.Model):
     """
-    A class representing the API keys saved in the database. Keys can be admin (write permission to all resources) or not (write permission only on assessments)
+    A class representing the API keys saved in the database. Keys can be admin (write permission
+        to all resources) or not (write permission only on assessments)
     """
-    key = db.Column(db.String(32), nullable=False, unique=True, primary_key=True)
+    key = db.Column(
+        db.String(32),
+        nullable=False,
+        unique=True,
+        primary_key=True)
     admin = db.Column(db.Boolean, default=False)
 
     @staticmethod
     def key_hash(key):
+        """
+        Generates the hash for the given randomly generated token
+        :param key: a string representing the token to use for the API
+        :return: the sha256 digest of the key parameter
+        """
         return hashlib.sha256(key.encode()).digest()
 
 
@@ -354,48 +439,55 @@ def require_assessments_key(func):
 @click.command("init-db")
 @with_appcontext
 def init_db_command():
+    """
+    Click function callable from the command line, initializes the database
+    """
     db.create_all()
 
 
 @click.command("testgen")
 @with_appcontext
 def generate_test_data():
-    s1 = Student(
+    """
+    Click function callable from the command line, populates the already initialized database
+        with test data
+    """
+    s_1 = Student(
         first_name='Draco',
         last_name='Malfoy',
         date_of_birth=datetime.date.fromisoformat('1980-06-05'),
         ssn='050680-6367'
     )
 
-    s2 = Student(
+    s_2 = Student(
         first_name='Harry',
         last_name='Potter',
         date_of_birth=datetime.date.fromisoformat('1980-07-31'),
         ssn='310780-6176'
     )
 
-    s3 = Student(
+    s_3 = Student(
         first_name='Hermione',
         last_name='Granger',
         date_of_birth=datetime.date.fromisoformat('1979-09-19'),
         ssn='190979-8400'
     )
 
-    c1 = Course(
+    c_1 = Course(
         title='Transfiguration',
         teacher='Minerva Mcgonagall',
         code='004723',
         ects=5
     )
 
-    c2 = Course(
+    c_2 = Course(
         title='Defence Against the Dark Arts',
         teacher='Professur Severus Snape',
         code='006031',
         ects=8
     )
 
-    c3 = Course(
+    c_3 = Course(
         title='Advanced Defence Against the Dark Arts',
         teacher='Professur Severus Snape',
         code='006032',
@@ -403,54 +495,54 @@ def generate_test_data():
     )
 
     a_s1_c1 = Assessment(
-        student=s1,
-        course=c1,
+        student=s_1,
+        course=c_1,
         grade=5,
         date=datetime.date.fromisoformat('1993-02-08')
     )
 
     a_s1_c2 = Assessment(
-        student=s1,
-        course=c2,
+        student=s_1,
+        course=c_2,
         grade=4,
         date=datetime.date.fromisoformat('1993-02-17')
     )
 
     a_s2_c1 = Assessment(
-        student=s2,
-        course=c1,
+        student=s_2,
+        course=c_1,
         grade=3,
         date=datetime.date.fromisoformat('1993-02-08')
     )
 
     a_s2_c2 = Assessment(
-        student=s2,
-        course=c2,
+        student=s_2,
+        course=c_2,
         grade=4,
         date=datetime.date.fromisoformat('1993-02-17')
     )
 
     a_s3_c1 = Assessment(
-        student=s3,
-        course=c1,
+        student=s_3,
+        course=c_1,
         grade=5,
         date=datetime.date.fromisoformat('1993-02-08')
     )
 
     a_s3_c2 = Assessment(
-        student=s3,
-        course=c2,
+        student=s_3,
+        course=c_2,
         grade=5,
         date=datetime.date.fromisoformat('1993-02-17')
     )
 
-    db.session.add(s1)
-    db.session.add(s2)
-    db.session.add(s3)
+    db.session.add(s_1)
+    db.session.add(s_2)
+    db.session.add(s_3)
 
-    db.session.add(c1)
-    db.session.add(c2)
-    db.session.add(c3)
+    db.session.add(c_1)
+    db.session.add(c_2)
+    db.session.add(c_3)
 
     db.session.add(a_s1_c1)
     db.session.add(a_s1_c2)
@@ -464,12 +556,20 @@ def generate_test_data():
 
 @click.command("testrun")
 def run_tests():
+    """
+    Click function callable from the command line, runs the tests contained in the
+        `tests/` subfolder
+    """
     pytest.main(["-x", "tests"])
 
 
 @click.command("masterkey")
 @with_appcontext
 def generate_master_key():
+    """
+    Click function callable from the command line, used to generate the admin key for the database.
+    Prints the key after adding it.
+    """
     # admin key
     token = secrets.token_urlsafe()
     db_key = ApiKey(

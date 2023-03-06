@@ -63,7 +63,7 @@ If `pip install -r requirements.txt` was executed, pytest is already installed. 
 In the `tests/` subfolder, some files containing functional tests can be found, these will test the model classes and database, and the API.
 To run the tests it is sufficient to execute `flask --app studentmanager testrun` from the project's root folder.
 
-## Results
+## Testing results
 
 Running `pytest --cov studentmanager --cov-report term-missing` returned the following table:
 
@@ -88,3 +88,17 @@ Implementing and running tests helped make the whole picture clear regarding all
 Some doubts and wrong implementations were corrected in regard to JSON schemas and validation, for example the correct definition of `date-time` fields and their validation.
 
 Tests were also important to make sure that the correct error code was returned for every possible error in the request, they also helped make the whole API coherent in this aspect.
+
+## Code quality
+
+To check for compliance with python's idiomatic rules, `pylint studentmanager` was executed, ignoring `no-member, import-outside-toplevel, no-self-use`.
+
+The resulting score is 9.86/10.
+
+The remaining warnings are:
+ - `studentmanager/utils.py`
+    - arguments `*args` and `*kwargs` unused in function `request_path_cache_key`. This function only returns `request.path` so any argument is ignored.
+ - `studentmanager/models.py`
+    - argument `key` in the validation functions (with the `@validates` decorator). The argument is not used because it represents the name of the field being validated. Since each function is responsible for one specific field, the parameter is ignored.
+    - argument `connection_record` in the `set_sqlite_pragma` function. The argument represents a `sqlalchemy.pool._ConnectionRecord` object, that represents a single connection.
+    - too few public methods for the ApiKey class. This is ignored since the only needed method for the class is the one that generates a digest of the API key.

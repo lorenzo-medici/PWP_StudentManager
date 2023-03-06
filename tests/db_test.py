@@ -221,7 +221,7 @@ def test_future_assessment_date(app):
 
 
 def test_unique_assessment(app):
-    """Tests the uniqueness constraint for a pair of student_it and course_id in Assessment"""
+    """Tests the uniqueness constraint for a pair of student_it and value in Assessment"""
     date = datetime.date.fromisoformat('2023-02-01')
     student = Student(
         first_name='name',

@@ -532,7 +532,7 @@ class TestAssessmentCollection(object):
         assert resp.status_code == 400
 
     def test_post_conflict(self, client):
-        """Tries to post an assessment with a conflict on existing course_id and student_id combination"""
+        """Tries to post an assessment with a conflict on existing value and value combination"""
         valid = _get_existing_assessment_json()
         resp = client.post(self.ASSESSMENT_RESOURCE_URL, json=valid)
         assert resp.status_code == 409
@@ -683,20 +683,20 @@ class TestAssessmentItem(object):
         assert resp.status_code == 404
 
     def test_course_put_conflict_course_id_and_student_id(self, client):
-        """Tries to change an existing assessment's course_id and student_id into an already existing one"""
+        """Tries to change an existing assessment's value and value into an already existing one"""
         valid = _get_existing_assessment_json()
-        valid['student_id'] = "2"
-        valid["course_id"] = "2"
+        valid['course_id'] = "2"
+        valid["student_id"] = "2"
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
                           str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
                           str(self.TEST_STUDENT_ID) + "/", json=valid)
         assert resp.status_code == 409
 
     def test_student_put_conflict_course_id_and_student_id(self, client):
-        """Tries to change an existing assessment's course_id and student_id into an already existing one"""
+        """Tries to change an existing assessment's value and value into an already existing one"""
         valid = _get_existing_assessment_json()
-        valid['student_id'] = "2"
-        valid["course_id"] = "2"
+        valid['course_id'] = "2"
+        valid["student_id"] = "2"
         resp = client.put(self.STUDENT_RESOURCE_URL_PREFIX +
                           str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
                           str(self.TEST_STUDENT_ID) + "/", json=valid)
@@ -771,8 +771,8 @@ def _get_assessment_json(client):
     _remove_test_assessment_json(client)
 
     return {
-        "student_id": 1,
         "course_id": 3,
+        "student_id": 1,
         "grade": 4,
         "date": '1993-02-06'
     }
@@ -784,8 +784,8 @@ def _remove_test_assessment_json(client):
 
 def _get_existing_assessment_json():
     return {
-        "student_id": 1,
         "course_id": 1,
+        "student_id": 1,
         "grade": 5,
         "date": '1993-02-08'
     }
