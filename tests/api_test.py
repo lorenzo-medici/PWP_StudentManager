@@ -8,12 +8,104 @@ import tempfile
 
 import pytest
 from flask.testing import FlaskClient
+from jsonschema.validators import validate
 from werkzeug.datastructures import Headers
 
 from studentmanager import create_app, db
 from studentmanager.models import Assessment, Student, Course, ApiKey
 
 TEST_KEY = "verysafetestkey"
+
+
+# From Lovelace material on Testing applications and Sensorhub example
+def _check_namespace(client, response):
+    """
+    Checks that the "studman" namespace is found from the response body, and
+    that its "name" attribute is a URL that can be accessed.
+    """
+
+    ns_href = response["@namespaces"]["studman"]["name"]
+    resp = client.get(ns_href)
+    assert resp.status_code == 200
+
+
+# From Lovelace material on Testing applications and Sensorhub example
+
+def _check_control_get_method(ctrl, client, obj):
+    """
+    Checks a GET type control from a JSON object be it root document or an item
+    in a collection. Also checks that the URL of the control can be accessed.
+    """
+    href = obj["@controls"][ctrl]["href"]
+    resp = client.get(href)
+    assert resp.status_code == 200
+
+
+# From Lovelace material on Testing applications and Sensorhub example
+
+def _check_control_delete_method(ctrl, client, obj):
+    """
+    Checks a DELETE type control from a JSON object be it root document or an
+    item in a collection. Checks the contrl's method in addition to its "href".
+    Also checks that using the control results in the correct status code of 204.
+    """
+
+    href = obj["@controls"][ctrl]["href"]
+    method = obj["@controls"][ctrl]["method"].lower()
+    assert method == "delete"
+    resp = client.delete(href)
+    assert resp.status_code == 204
+
+
+# From Lovelace material on Testing applications and Sensorhub example
+
+def _check_control_put_method(ctrl, client, obj, obj_to_put, prop_name):
+    """
+    Checks a PUT type control from a JSON object be it root document or an item
+    in a collection. In addition to checking the "href" attribute, also checks
+    that method, encoding and schema can be found from the control. Also
+    validates a valid sensor against the schema of the control to ensure that
+    they match. Finally checks that using the control results in the correct
+    status code of 204.
+    """
+
+    ctrl_obj = obj["@controls"][ctrl]
+    href = ctrl_obj["href"]
+    method = ctrl_obj["method"].lower()
+    encoding = ctrl_obj["encoding"].lower()
+    schema = ctrl_obj["schema"]
+    assert method == "put"
+    assert encoding == "json"
+    body = obj_to_put
+    body[prop_name] = obj[prop_name]
+    validate(body, schema)
+    resp = client.put(href, json=body)
+    assert resp.status_code == 204
+
+
+# From Lovelace material on Testing applications and Sensorhub example
+
+def _check_control_post_method(ctrl, client, obj, obj_to_post):
+    """
+    Checks a POST type control from a JSON object be it root document or an item
+    in a collection. In addition to checking the "href" attribute, also checks
+    that method, encoding and schema can be found from the control. Also
+    validates a valid sensor against the schema of the control to ensure that
+    they match. Finally checks that using the control results in the correct
+    status code of 201.
+    """
+
+    ctrl_obj = obj["@controls"][ctrl]
+    href = ctrl_obj["href"]
+    method = ctrl_obj["method"].lower()
+    encoding = ctrl_obj["encoding"].lower()
+    schema = ctrl_obj["schema"]
+    assert method == "post"
+    assert encoding == "json"
+    body = obj_to_post
+    validate(body, schema)
+    resp = client.post(href, json=body)
+    assert resp.status_code == 201
 
 
 # https://stackoverflow.com/questions/16416001/set-http-headers-for-all-requests-in-a-flask-test
@@ -331,13 +423,20 @@ class TestStudentCollection(object):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
         body = json.loads(resp.data)
-        assert len(body) == 3
-        for item in body:
+        _check_namespace(client, body)
+        _check_control_post_method("studman:add-student", client, body, _get_student_json())
+        _check_control_get_method("studman:courses-all", client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
+        assert len(body["items"]) == 3
+        for item in body["items"]:
             assert "student_id" in item
             assert "first_name" in item
             assert "last_name" in item
             assert "date_of_birth" in item
             assert "ssn" in item
+            _check_control_get_method("self", client, item)
+            _check_control_get_method("profile", client, item)
 
     def test_post_valid_request(self, client):
         """Succesfully adds a new student"""
@@ -385,6 +484,14 @@ class TestStudentItem(object):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
         body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("profile", client, body)
+        _check_control_get_method("studman:student-assessments", client, body)
+        _check_control_put_method("edit", client, body, _get_existing_student_json(), "student_id")
+        _check_control_delete_method("studman:delete", client, body)
+        _check_control_get_method("collection", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
         assert body["first_name"] == 'Draco'
         assert body["last_name"] == 'Malfoy'
         assert body["date_of_birth"] == '1980-06-05'
@@ -477,8 +584,27 @@ class TestAssessmentCollection(object):
     TEST_COURSE_ID = 1
     TEST_STUDENT_ID = 1
 
+    def test_assessment_get(self, client):
+        """Successfully gets all assessments from the assessment collection"""
+        resp = client.get(self.ASSESSMENT_RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_post_method("studman:add-assessment", client, body, _get_assessment_json(client))
+        _check_control_get_method("studman:students-all", client, body)
+        _check_control_get_method("studman:courses-all", client, body)
+        assert len(body["items"]) == 6
+        for item in body["items"]:
+            assert "course_id" in item
+            assert "student_id" in item
+            assert "grade" in item
+            assert "date" in item
+            _check_control_get_method("self", client, item)
+            _check_control_get_method("profile", client, item)
+
     def test_course_get(self, client):
-        """Succesfully gets all assessments"""
+        """Succesfully gets all assessments from course assessment collection"""
         resp = client.get(self.COURSE_RESOURCE_URL_PREFIX +
                           str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX)
 
@@ -492,18 +618,24 @@ class TestAssessmentCollection(object):
             assert "date" in item
 
     def test_student_get(self, client):
-        """Succesfully gets all assessments"""
+        """Succesfully gets all assessments from student assessment collection"""
         resp = client.get(self.STUDENT_RESOURCE_URL_PREFIX +
-                          str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX)
+                          str(self.TEST_STUDENT_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX)
 
         assert resp.status_code == 200
         body = json.loads(resp.data)
-        assert len(body) == 2
-        for item in body:
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_get_method("studman:student", client, body)
+        assert len(body) == 3
+        for item in body["items"]:
             assert "course_id" in item
             assert "student_id" in item
             assert "grade" in item
             assert "date" in item
+            _check_control_get_method("self", client, item)
+            _check_control_get_method("profile", client, item)
 
     def test_post_valid_request(self, client):
         """Succesfully adds a new assessment"""
@@ -547,7 +679,7 @@ class TestAssessmentCollection(object):
     def test_post_invalid_grade(self, client):
         """Tries to post an assessment with an invalid date"""
         valid = _get_assessment_json(client)
-        valid["grade"] = 'notanint'
+        valid["grade"] = 2.5
         resp = client.post(self.ASSESSMENT_RESOURCE_URL, json=valid)
         assert resp.status_code == 400
 
@@ -595,6 +727,14 @@ class TestAssessmentItem(object):
                           str(self.TEST_STUDENT_ID) + "/")
         assert resp.status_code == 200
         body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("collection", client, body)
+        _check_control_put_method("edit", client, body, _get_existing_assessment_json(), "course_id")
+        _check_control_delete_method("studman:delete", client, body)
+        _check_control_get_method("studman:student", client, body)
+        _check_control_get_method("studman:course", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
         assert body["course_id"] == 1
         assert body["student_id"] == 1
         assert body["grade"] == 5
@@ -635,7 +775,7 @@ class TestAssessmentItem(object):
     def test_course_put_invalid_grade(self, client):
         """Successfully modifies an existing assessment"""
         valid = _get_existing_assessment_json()
-        valid["grade"] = "notanint"
+        valid["grade"] = 2.5
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
                           str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
                           str(self.TEST_STUDENT_ID) + "/", json=valid)
@@ -644,7 +784,7 @@ class TestAssessmentItem(object):
     def test_student_put_invalid_grade(self, client):
         """Successfully modifies an existing assessment"""
         valid = _get_existing_assessment_json()
-        valid["grade"] = "notanint"
+        valid["grade"] = 2.5
         resp = client.put(self.STUDENT_RESOURCE_URL_PREFIX +
                           str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
                           str(self.TEST_STUDENT_ID) + "/", json=valid)
@@ -685,8 +825,8 @@ class TestAssessmentItem(object):
     def test_course_put_conflict_course_id_and_student_id(self, client):
         """Tries to change an existing assessment's value and value into an already existing one"""
         valid = _get_existing_assessment_json()
-        valid['course_id'] = "2"
-        valid["student_id"] = "2"
+        valid['course_id'] = 2
+        valid["student_id"] = 2
         resp = client.put(self.COURSE_RESOURCE_URL_PREFIX +
                           str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
                           str(self.TEST_STUDENT_ID) + "/", json=valid)
@@ -695,8 +835,8 @@ class TestAssessmentItem(object):
     def test_student_put_conflict_course_id_and_student_id(self, client):
         """Tries to change an existing assessment's value and value into an already existing one"""
         valid = _get_existing_assessment_json()
-        valid['course_id'] = "2"
-        valid["student_id"] = "2"
+        valid['course_id'] = 2
+        valid["student_id"] = 2
         resp = client.put(self.STUDENT_RESOURCE_URL_PREFIX +
                           str(self.TEST_COURSE_ID) + self.ASSESSMENT_RESOURCE_URL_POSTFIX +
                           str(self.TEST_STUDENT_ID) + "/", json=valid)

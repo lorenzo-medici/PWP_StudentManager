@@ -21,6 +21,7 @@ class CourseCollection(Resource):
     """
     Class that represents a collection of courses, reachable at '/api/courses/'
     """
+
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self):
         """Get the list of courses from the database"""
@@ -75,6 +76,7 @@ class CourseItem(Resource):
     Class that represents a Course Resource, reachable at '/api/courses/<course_id>/'
     Available methods are GET, PUT and DELETE
     """
+
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, course):
         """Returns the representation of the course

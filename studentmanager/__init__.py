@@ -5,9 +5,11 @@ This module is used to retrieve a working Flask application complete with all th
 
 import os
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
+
+from studentmanager.constants import LINK_RELATIONS_URL
 
 db = SQLAlchemy()
 cache = Cache()
@@ -23,7 +25,7 @@ def create_app(test_config=None):
     :param test_config: A dictionary containing the app configuration parameters to use for Tests
     :return: a Flask app object
     """
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, instance_relative_config=True, static_folder='static')
     app.config.from_mapping(
         SECRET_KEY="dev",
         SQLALCHEMY_DATABASE_URI="sqlite:///" +
@@ -73,5 +75,16 @@ def create_app(test_config=None):
         app.config["CACHE_DIR"] = test_config["CACHE_DIR"]
 
     cache.init_app(app)
+
+    # Static routes related to profiles and link relations
+    # from sensorhub project example and Exercise 3 material on Lovelace
+    # TODO: Fill in pages
+    @app.route("/profiles/<resource>/")
+    def send_profile_html(resource):
+        return send_from_directory(app.static_folder, f'profiles/{resource}.html')
+
+    @app.route(LINK_RELATIONS_URL)
+    def send_link_relations_html():
+        return send_from_directory(app.static_folder, "link-relations.html")
 
     return app

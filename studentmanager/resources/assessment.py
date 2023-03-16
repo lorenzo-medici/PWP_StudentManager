@@ -4,12 +4,16 @@ This module contains all the classes related to the Assessment resource:
  - a singular assessment for either a student or a course
  - the endpoint for adding new assessments
 """
+import json
+
 from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from studentmanager import db, cache
+from studentmanager.builder import StudentManagerBuilder, create_error_response
+from studentmanager.constants import ASSESSMENT_PROFILE, MASON, LINK_RELATIONS_URL
 from studentmanager.models import Assessment, require_assessments_key
 from studentmanager.utils import request_path_cache_key
 
@@ -23,6 +27,7 @@ def clear_cache(assessment):
      - its course's and student's view (since assessments are included in serialize())
     :param assessment: an existing assessment database object
     """
+    all_assessments_url = url_for('api.assessmentcollection')
     course_assessments_url = url_for(
         'api.courseassessmentcollection',
         course=assessment.course)
@@ -33,6 +38,7 @@ def clear_cache(assessment):
     student_url = url_for('api.studentitem', student=assessment.student)
     cache.delete_many(
         request.path,
+        all_assessments_url,
         course_assessments_url,
         student_assessments_url,
         course_url,
@@ -61,21 +67,55 @@ class StudentAssessmentCollection(Resource):
     The collection of all assessments of a specific student,
         reachable at '/api/students/<student_id>/assessments/''
     """
+
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student):
         """Get the list of assessments from the database"""
-        assessments = Assessment.query.filter_by(
-            student_id=student.student_id).all()
-        assessments_list = [c.serialize() for c in assessments]
 
-        return assessments_list
+        body = StudentManagerBuilder(items=[])
+
+        for assessment in Assessment.query.filter_by(student_id=student.student_id).all():
+            item = StudentManagerBuilder(assessment.serialize())
+            item.add_control("self", url_for('api.studentassessmentitem',
+                                             student=assessment.student,
+                                             course=assessment.course))
+            item.add_control("profile", ASSESSMENT_PROFILE)
+            body["items"].append(item)
+
+        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_control("self", url_for('api.studentassessmentcollection', student=student))
+        body.add_control_all_assessments()
+        body.add_control_get_student(student)
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
 
 class AssessmentCollection(Resource):
     """
     The endpoint for adding a new assessment to the database, reachable at '/api/asssessments/'
-    The only available method is POST
     """
+
+    @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
+    def get(self):
+        """Get the list of assessments from the database"""
+
+        body = StudentManagerBuilder(items=[])
+
+        for assessment in Assessment.query.all():
+            item = StudentManagerBuilder(assessment.serialize())
+            item.add_control("self", url_for('api.courseassessmentitem',
+                                             student=assessment.student,
+                                             course=assessment.course))
+            item.add_control("profile", ASSESSMENT_PROFILE)
+            body["items"].append(item)
+
+        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_control("self", url_for('api.assessmentcollection'))
+        body.add_control_add_assessment()
+        body.add_control_all_students()
+        body.add_control_all_courses()
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     @require_assessments_key
     def post(self):
@@ -93,13 +133,13 @@ class AssessmentCollection(Resource):
             assessment.deserialize(request.json)
 
             if not isinstance(assessment.grade, int):
-                return "Grade value must be an integer", 400
+                return create_error_response(400, 'Bad Request', 'Grade value must be an integer')
 
         except ValidationError:
-            return "JSON format is not valid", 400
+            return create_error_response(400, 'Bad Request', 'JSON format is not valid')
 
         except ValueError:
-            return 'Date_of_birth not in iso format', 400
+            return create_error_response(400, 'Bad Request', 'Date_of_birth not in iso format')
 
         try:
             db.session.add(assessment)
@@ -107,8 +147,12 @@ class AssessmentCollection(Resource):
 
         except IntegrityError:
             db.session.rollback()
-            return f"Assessment already exists with course_id '{assessment.course_id}' and " \
-                   f"student_id '{assessment.student_id}'", 409
+            return create_error_response(
+                409,
+                'Conflict',
+                f"Assessment already exists with course_id '{assessment.course_id}' and "
+                f"student_id '{assessment.student_id}'"
+            )
 
         clear_cache(assessment)
 
@@ -136,13 +180,24 @@ class StudentAssessmentItem(Resource):
         :param course: the course_id for which to retrieve the assessment
         Returns the serialized list of assessments
         """
+        body = StudentManagerBuilder(Assessment.query
+                                     .filter_by(student_id=student.student_id)
+                                     .filter_by(course_id=course.course_id)
+                                     .first().serialize())
 
-        assessment = Assessment.query \
-            .filter_by(student_id=student.student_id) \
-            .filter_by(course_id=course.course_id) \
-            .first()
+        self_url = url_for('api.studentassessmentitem', student=student, course=course)
 
-        return assessment.serialize()
+        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_control("self", self_url)
+        body.add_control("profile", ASSESSMENT_PROFILE)
+        body.add_control("collection", url_for('api.studentassessmentcollection', student=student))
+        body.add_control_put("Modify a student's assessment", self_url, Assessment.json_schema())
+        body.add_control_delete("Delete a student's assessment", self_url)
+        body.add_control_get_student(student)
+        body.add_control_get_course(course)
+        body.add_control_all_assessments()
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     @require_assessments_key
     def put(self, student, course):
@@ -164,21 +219,25 @@ class StudentAssessmentItem(Resource):
             assessment.deserialize(request.json)
 
             if not isinstance(assessment.grade, int):
-                return "Grade value must be an integer", 400
+                return create_error_response(400, "Bad Request", 'Grade value must be an integer')
 
         except ValidationError as exc:
-            return str(exc), 400
+            return create_error_response(400, 'Bad Request', 'JSON format is not valid')
 
         except ValueError:
-            return 'Date_of_birth not in iso format', 400
+            return create_error_response(400, 'Bad Request', 'Date_of_birth not in iso format')
 
         try:
             db.session.add(assessment)
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return f"Assessment already exists with course_id '{assessment.course_id}' and " \
-                   f"student_id '{assessment.student_id}'", 409
+            return create_error_response(
+                409,
+                'Conflict',
+                f"Assessment already exists with course_id '{assessment.course_id}' and "
+                f"student_id '{assessment.student_id}'"
+            )
 
         clear_cache(assessment)
 

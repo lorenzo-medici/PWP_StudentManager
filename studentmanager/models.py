@@ -129,7 +129,7 @@ class Assessment(db.Model):
             "type": "object",
             "required": ["course_id", "student_id", "grade", "date"]
         }
-        props = schema["proprieties"] = {}
+        props = schema["properties"] = {}
         props["course_id"] = {
             "description": "Course identifier that this assessment belongs to",
             "type": "number",
@@ -257,7 +257,7 @@ class Student(db.Model):
             "type": "object",
             "required": ["first_name", "last_name", "ssn", "date_of_birth"]
         }
-        props = schema["proprieties"] = {}
+        props = schema["properties"] = {}
         props["ssn"] = {
             "description": "student social security number",
             "type": "string",

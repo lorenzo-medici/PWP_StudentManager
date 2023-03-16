@@ -22,10 +22,9 @@ def is_valid_ssn(ssn, date_of_birth):
     :param date_of_birth: datetime.date object representing the date of birth to check the ssn for
     :return: returns a bool indicating whether the ssn is valid or not.
     """
-    return \
-        re.fullmatch(
-            '([0-9]{6})([A\\-+])(00[2-9]|0[1-9][0-9]|[1-8][0-9][0-9])([0-9A-FHJ-NPR-Y])',
-            ssn) is not None \
+    return re.fullmatch(
+        '([0-9]{6})([A\\-+])(00[2-9]|0[1-9][0-9]|[1-8][0-9][0-9])([0-9A-FHJ-NPR-Y])',
+        ssn) is not None \
         and ssn[0:6] == date_of_birth.strftime("%d%m%y") \
         and ssn[10] == generate_control_character(ssn) \
         and ssn[6] == generate_century_character(date_of_birth)
