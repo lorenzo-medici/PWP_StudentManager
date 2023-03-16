@@ -35,7 +35,7 @@ executing `pip install <module>==<version>` for each module or adding all module
 
 The database engine used is SQLite, version 3.40.1.
 
-# Database Inizialization and population
+# Database Initialisation and population
 
 The database can be initialized by executing `flask --app studentmanager init-db`.
 After that, it can be populated with test data by executing `flask --app studentmanager testgen`.
