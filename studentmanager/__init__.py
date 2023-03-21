@@ -8,6 +8,7 @@ import os
 from flask import Flask
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
+from flasgger import Swagger
 
 db = SQLAlchemy()
 cache = Cache()
@@ -27,9 +28,17 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY="dev",
         SQLALCHEMY_DATABASE_URI="sqlite:///" +
-                                os.path.join(app.instance_path, "StudentManager.db"),
+                                os.path.join(app.instance_path,
+                                             "StudentManager.db"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
+
+    app.config["SWAGGER"] = {
+        "title": "PWP Student Manager API",
+        "openapi": "3.0.3",
+        "uiversion": 3,
+        "doc_dir": "./doc",
+    }
 
     if test_config is None:
         app.config.from_pyfile("config.py", silent=True)
@@ -73,5 +82,7 @@ def create_app(test_config=None):
         app.config["CACHE_DIR"] = test_config["CACHE_DIR"]
 
     cache.init_app(app)
+
+    Swagger(app, template_file="doc/doc.yml")
 
     return app

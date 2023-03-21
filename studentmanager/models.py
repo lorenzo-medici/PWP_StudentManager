@@ -13,6 +13,7 @@ import datetime
 import hashlib
 import secrets
 
+import yaml
 import click
 import pytest
 from flask import request
@@ -589,3 +590,41 @@ def generate_master_key():
     print("assessment key: " + token)
 
     db.session.commit()
+
+
+@click.command("masterkey-test")
+@with_appcontext
+def generate_master_key():
+    """
+    Click function callable from the command line, used to set a known, hardcoded admin key for the database for testing purposes.
+    Prints the key after adding it.
+    """
+    # admin key
+    token = "0000000000000000"
+    db_key = ApiKey(
+        key=ApiKey.key_hash(token),
+        admin=True
+    )
+    db.session.add(db_key)
+    print("admin key: " + token)
+
+    # non-admin assessment key
+    token = "1111111111111111"
+    db_key = ApiKey(
+        key=ApiKey.key_hash(token),
+        admin=False
+    )
+    db.session.add(db_key)
+    print("assessment key: " + token)
+
+    db.session.commit()
+
+
+@click.command("yamlschema")
+def run_tests():
+    """
+    CLI flag, outputs all models' YAML schemas
+    """
+    print(yaml.dump(Assessment.json_schema()))
+    print(yaml.dump(Student.json_schema()))
+    print(yaml.dump(Course.json_schema()))
