@@ -91,6 +91,21 @@ class AssessmentCollection(Resource):
     The only available method is POST
     """
 
+    # must explicitly specify current working directory because otherwise
+    # it will look in in cache dir
+    @swag_from(os.getcwd() + "/studentmanager/doc/assessment_collection/get.yml")
+    @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
+    def get(self):
+        """
+        Get the list of assessments from the database
+
+        """
+        assessments = Assessment.query.all()
+
+        assessments_list = [a.serialize() for a in assessments]
+
+        return assessments_list
+
     @swag_from("/studentmanager/doc/assessment_collection/post.yml")
     @require_assessments_key
     def post(self):
