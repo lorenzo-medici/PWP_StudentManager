@@ -1,1 +1,54 @@
-student profile page
+<h1>StudentManager API: Student Profile</h1>
+
+In the API, a Student resource represents the personal data of a student enrolled at the University.
+It holds the following attributes:
+
+<ul>
+    <li><b>first_name</b>: the student's first name. It is a string limited to 64 characters in length.</li>
+    <li><b>last_name</b>: the student's last name. It is a string limited to 64 characters in length.</li>
+    <li><b>date_of_birth</b>: the student's date of birth. It is stored as an SQLAlchemy.Date. It is inputted to and
+        outputted from the API as a standard ISO date ('yyyy-mm-dd'). It has to be in the past with respect to day it is
+        inserted.
+    </li>
+    <li><b>ssn</b>: the student's Social Security Number in Finnish format. It is a string of exactly 11 characters.
+        Validation has to pass for the SSN's format, and its coherence with the date_of_birth attribute. It has to be
+        unique.
+    </li>
+</ul>
+All attributes are mandatory when adding or modyfing a student. A complete JSON schema for tudents can be obtained from the Student.json_schema method, or by the hypermedia controls related to adding or modyfing students.
+
+<h2>Endpoints</h2>
+
+
+All students are stored in the StudentCollection resource (/api/students/). This collection allows to add new students to the database.
+<br/><br/>
+
+Individual students can be accessed from the StudentItem resource (/api/students/&lt;student_id&gt;/). This resource allows editing and deletion of an individual student.
+<br/>
+It also allows access to the student's assessment collection (/api/students/&lt;student_id&gt;/assessments/).
+
+<h2>Relevant link relations</h2>
+
+<ul>
+    <li><b>self</b>: carried by all Collections and Items returned by the API. In particular, each student returned by
+        the StudentCollection will carry it.
+    </li>
+    <li><b>profile</b>: points to this page.</li>
+    <li><b>collection</b>: points from each Item resource to the respective Collection. (i.e. StudentItem resources will
+        point to the StudentCollection).
+    </li>
+    <li><b>studman:courses-all, studman:assessments-all</b>: point to the other two main Collections in our API
+        structure: CourseCollection and AssessmentCollection.
+    </li>
+    <li><b>studman:add-student</b>: carried by StudentCollection, pointing to itself specifying the POST method and the
+        required Student json schema.
+    </li>
+    <li><b>edit, studman:delete</b>: carried by StudentItem, pointing to itself with PUT and DELETE methods
+        respectively.
+    </li>
+    <li><b>studman:student</b>: carried by the StudentAssessmentCollection resource, points to the relevant Student.
+    </li>
+    <li><b>studman:student-assessments</b>: inverse of the previous control, carried by a StudentItem, points to the
+        relevant StudentAssessmentCollection.
+    </li>
+</ul>

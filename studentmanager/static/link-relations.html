@@ -1,1 +1,35 @@
-link relations page
+<h1>StudentManager API: Link Relations</h1>
+
+<h2>Standard link relations</h2>
+
+<ul>
+    <li><b>self</b>: carried by all resources returned by the API. Points to the resource itself. It is also carried by
+        all Items in Collections, pointing at the related resource.
+    </li>
+    <li><b>proflie</b>: points to the related proflie of the current resource.</li>
+    <li><b>collection</b>: carried by Item resources, points to the related Collection.</li>
+    <li><b>edit</b>: carried by Item resources, points to itself, specifying PUT method and the appropriate JSON schema
+        to use for the request
+    </li>
+</ul>
+
+<h2>Custom link relations</h2>
+
+All the following relations are defined in the 'studman' namespace, prepended to the relation and separated by a colon (e.g. 'studman:courses-all').
+
+<ul>
+    <li><b>students-all, courses-all, assessments</b>: this links point to the three main resources in our API:
+        StudentCollection, CourseCollection and AssessmentCollection.
+    </li>
+    <li><b>add-student, add-course, add-assessment</b>: each one of the aforementioned collections wlil point to itself
+        with the corresponding control, specifying POST method and the appropriate JSON schema to use for the request.
+    </li>
+    <li><b>student-assessments, course-assessments</b>: each StudentItem and CourseItem wlil carry a link to the
+        respective AssessmentCollection.
+    </li>
+    <li><b>student, course</b>: each AssessmentItem wlil point to its related Student and Course through these links. In
+        addition, StudentAssessmentCollection (and CourseAssessmentCollection) resources wlil point to the related
+        StudentItem (and CourseItem).
+    </li>
+    <li><b>delete</b>: a utliity link carried by every Item resource pointing itself, specyfing DELETE method.</li>
+</ul>
