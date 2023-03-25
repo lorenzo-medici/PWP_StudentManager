@@ -15,6 +15,7 @@ import secrets
 
 import click
 import pytest
+import yaml
 from flask import request
 from flask.cli import with_appcontext
 from sqlalchemy import event, CheckConstraint
@@ -589,3 +590,13 @@ def generate_master_key():
     print("assessment key: " + token)
 
     db.session.commit()
+
+
+@click.command("yamlschema")
+def dump_yaml_schemas():
+    """
+    CLI flag, outputs all models' YAML schemas
+    """
+    print(yaml.dump(Assessment.json_schema()))
+    print(yaml.dump(Student.json_schema()))
+    print(yaml.dump(Course.json_schema()))

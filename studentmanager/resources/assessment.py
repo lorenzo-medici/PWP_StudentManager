@@ -5,7 +5,9 @@ This module contains all the classes related to the Assessment resource:
  - the endpoint for adding new assessments
 """
 import json
+import os
 
+from flasgger import swag_from
 from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
@@ -52,6 +54,9 @@ class CourseAssessmentCollection(Resource):
         reachable at '/api/courses/<course_id>/assessments/'
     """
 
+    # must explicitly specify current working directory because otherwise
+    # it will look in in cache dir
+    @swag_from(os.getcwd() + "/studentmanager/doc/course_assessment_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, course):
         """
@@ -82,6 +87,9 @@ class StudentAssessmentCollection(Resource):
         reachable at '/api/students/<student_id>/assessments/''
     """
 
+    # must explicitly specify current working directory because otherwise
+    # it will look in in cache dir
+    @swag_from(os.getcwd() + "/studentmanager/doc/student_assessment_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student):
         """Get the list of assessments from the database"""
@@ -109,6 +117,9 @@ class AssessmentCollection(Resource):
     The endpoint for adding a new assessment to the database, reachable at '/api/asssessments/'
     """
 
+    # must explicitly specify current working directory because otherwise
+    # it will look in in cache dir
+    @swag_from(os.getcwd() + "/studentmanager/doc/assessment_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self):
         """Get the list of assessments from the database"""
@@ -131,9 +142,11 @@ class AssessmentCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
+    @swag_from("/studentmanager/doc/assessment_collection/post.yml")
     @require_assessments_key
     def post(self):
-        """Adds a new assessment.
+        """
+        Adds a new assessment.
         Returns 400 if the requests is not a valid json request or if the format of the request
             is not valid, or the ects value is not integer.
         Returns 409 if an IntegrityError happens (assessment for pair (student_id, course_id) is
@@ -186,6 +199,9 @@ class StudentAssessmentItem(Resource):
     Available methods are GET, PUT and DELETE
     """
 
+    # must explicitly specify current working directory because otherwise
+    # it will look in in cache dir
+    @swag_from(os.getcwd() + "/studentmanager/doc/student_assessment_item/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student, course):
         """
@@ -213,6 +229,7 @@ class StudentAssessmentItem(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
+    @swag_from("/studentmanager/doc/student_assessment_item/put.yml")
     @require_assessments_key
     def put(self, student, course):
         """Edits the assessment's data.
@@ -220,7 +237,8 @@ class StudentAssessmentItem(Resource):
         :param course: the course_id for which to edit the assessment
         Returns 400 if the requests is not a valid json request or if the format of the request
             is not valid.
-        Returns 409 if an IntegrityError happens (code is already present)"""
+        Returns 409 if an IntegrityError happens (code is already present)
+        """
 
         assessment = Assessment.query \
             .filter_by(student_id=student.student_id) \
@@ -235,7 +253,7 @@ class StudentAssessmentItem(Resource):
             if not isinstance(assessment.grade, int):
                 return create_error_response(400, "Bad Request", 'Grade value must be an integer')
 
-        except ValidationError as exc:
+        except ValidationError:
             return create_error_response(400, 'Bad Request', 'JSON format is not valid')
 
         except ValueError:
@@ -257,6 +275,7 @@ class StudentAssessmentItem(Resource):
 
         return Response(status=204)
 
+    @swag_from("/studentmanager/doc/student_assessment_item/delete.yml")
     @require_assessments_key
     def delete(self, student, course):
         """
@@ -285,6 +304,9 @@ class CourseAssessmentItem(Resource):
     Available methods are GET, PUT and DELETE
     """
 
+    # must explicitly specify current working directory because otherwise
+    # it will look in in cache dir
+    @swag_from(os.getcwd() + "/studentmanager/doc/course_assessment_item/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student, course):
         """
@@ -313,6 +335,7 @@ class CourseAssessmentItem(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
+    @swag_from("/studentmanager/doc/course_assessment_item/put.yml")
     @require_assessments_key
     def put(self, student, course):
         """Edits the assessment's data.
@@ -320,7 +343,8 @@ class CourseAssessmentItem(Resource):
         :param course: the course_id for which to edit the assessment
         Returns 400 if the requests is not a valid json request or if the format of the request
             is not valid.
-        Returns 409 if an IntegrityError happens (code is already present)"""
+        Returns 409 if an IntegrityError happens (code is already present)
+        """
 
         assessment = Assessment.query \
             .filter_by(student_id=student.student_id) \
@@ -335,7 +359,7 @@ class CourseAssessmentItem(Resource):
             if not isinstance(assessment.grade, int):
                 return create_error_response(400, "Bad Request", 'Grade value must be an integer')
 
-        except ValidationError as exc:
+        except ValidationError:
             return create_error_response(400, 'Bad Request', 'JSON format is not valid')
 
         except ValueError:
@@ -353,6 +377,7 @@ class CourseAssessmentItem(Resource):
 
         return Response(status=204)
 
+    @swag_from("/studentmanager/doc/course_assessment_item/delete.yml")
     @require_assessments_key
     def delete(self, student, course):
         """

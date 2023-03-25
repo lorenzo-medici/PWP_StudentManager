@@ -5,7 +5,9 @@ This module contains all the classes related to the Student resource:
  - the related URL converter
 """
 import json
+import os
 
+from flasgger import swag_from
 from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
@@ -27,6 +29,9 @@ class StudentCollection(Resource):
     Class that represents a collection of students, reachable at '/api/students/'
     """
 
+    # must explicitly specify current working directory because otherwise
+    # it will look in in cache dir
+    @swag_from(os.getcwd() + "/studentmanager/doc/student_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self):
         """
@@ -49,15 +54,18 @@ class StudentCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
+    @swag_from("/studentmanager/doc/student_collection/post.yml")
     @require_admin_key
     def post(self):
-        """Adds a new student.
+        """
+        Adds a new student.
         takes as input a json file passed with the post request
         Returns 415 if the request is not a valid json request.
         Returns 400 if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (ssn is invalid or already present, date_of_birth
             is not in the past)
-        Returns 201 and a location header containing the uri of the newly added student"""
+        Returns 201 and a location header containing the uri of the newly added student
+        """
 
         student = Student()
 
@@ -103,10 +111,15 @@ class StudentItem(Resource):
     Available methods are GET, PUT and DELETE
     """
 
+    # must explicitly specify current working directory because otherwise
+    # it will look in in cache dir
+    @swag_from(os.getcwd() + "/studentmanager/doc/student_item/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student):
-        """Returns the representation of the student
-        :param student: takes a student object containing the information about the student"""
+        """
+        Returns the representation of the student
+        :param student: takes a student object containing the information about the student
+        """
 
         body = StudentManagerBuilder(student.serialize())
 
@@ -123,16 +136,19 @@ class StudentItem(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
+    @swag_from("/studentmanager/doc/student_item/put.yml")
     @require_admin_key
     def put(self, student):
-        """Edits the student's data.
+        """
+        Edits the student's data.
         :param student: student object that contains the information of the student that has to
             be edited
         Returns 415 if the requests is not a valid json request.
         Returns 400 if the format of the request is not valid.
         Returns 409 if an IntegrityError happens (ssn is invalid or already present, date_of_birth
             is not in the past)
-        Returns 204 if the student has correctly been updated"""
+        Returns 204 if the student has correctly been updated
+        """
 
         try:
             validate(request.json, Student.json_schema(),
@@ -142,7 +158,7 @@ class StudentItem(Resource):
 
             db.session.add(student)
             db.session.commit()
-        except ValidationError as exc:
+        except ValidationError:
             return create_error_response(400, 'Bad Request', "Invalid request format")
 
         except ValueError:
@@ -159,12 +175,15 @@ class StudentItem(Resource):
         self._clear_cache()
         return Response(status=204)
 
+    @swag_from("/studentmanager/doc/student_item/delete.yml")
     @require_admin_key
     def delete(self, student):
-        """Deletes the existing student
+        """
+        Deletes the existing student
         :param student: a student object that contains the information about the student that has
             to be modified
-        :return: 204 if the student is correctly deleted"""
+        :return: 204 if the student is correctly deleted
+        """
         db.session.delete(student)
         db.session.commit()
         self._clear_cache()
