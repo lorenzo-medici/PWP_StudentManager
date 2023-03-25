@@ -1,1 +1,21 @@
-description: TODO
+description: Add a new course
+parameters:
+  $ref: '#/components/parameters/course'
+requestBody:
+  description: Json document that contain basic data about the new course
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Course'
+      example:
+        title: "Transfiguration"
+        teacher: "Minerva Mcgonagall"
+        code: "004723"
+        ects: 5
+responses:
+  '201':
+    description: The course have been created successfully
+  '400':
+    description: The request body was not valid
+  '409':
+    description: A student with the same id already exists
