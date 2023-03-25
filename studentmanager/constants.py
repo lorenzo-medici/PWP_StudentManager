@@ -1,3 +1,7 @@
+"""
+This module contains constants used by our API
+"""
+
 MASON = "application/vnd.mason+json"
 
 STUDENT_PROFILE = "/profiles/student/"

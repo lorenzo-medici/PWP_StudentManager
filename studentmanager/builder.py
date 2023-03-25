@@ -1,3 +1,9 @@
+"""
+This modules contains the MasonBuilder and StudentManagerBuilder extending it.
+These classes are used to create Response bodies with all the hypermedia controls
+    necessary.
+"""
+
 import json
 
 from flask import url_for, request, Response

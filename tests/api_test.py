@@ -269,12 +269,19 @@ class TestCourseCollection(object):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
         body = json.loads(resp.data)
-        assert len(body) == 3
-        for item in body:
+        _check_namespace(client, body)
+        _check_control_post_method("studman:add-course", client, body, _get_course_json())
+        _check_control_get_method("studman:students-all", client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
+        assert len(body["items"]) == 3
+        for item in body["items"]:
             assert "title" in item
             assert "teacher" in item
             assert "code" in item
             assert "ects" in item
+            _check_control_get_method("self", client, item)
+            _check_control_get_method("profile", client, item)
 
     def test_post_valid_request(self, client):
         """Successfully adds a new course"""
@@ -328,6 +335,14 @@ class TestCourseItem(object):
         resp = client.get(self.RESOURCE_URL)
         assert resp.status_code == 200
         body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("profile", client, body)
+        _check_control_get_method("studman:course-assessments", client, body)
+        _check_control_put_method("edit", client, body, _get_existing_course_json(), "code")
+        _check_control_delete_method("studman:delete", client, body)
+        _check_control_get_method("collection", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
         assert "course_id" in body
         assert body["title"] == 'Transfiguration'
         assert body["teacher"] == 'Minerva Mcgonagall'
@@ -610,12 +625,18 @@ class TestAssessmentCollection(object):
 
         assert resp.status_code == 200
         body = json.loads(resp.data)
-        assert len(body) == 3
-        for item in body:
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_get_method("studman:course", client, body)
+        assert len(body["items"]) == 3
+        for item in body["items"]:
             assert "course_id" in item
             assert "student_id" in item
             assert "grade" in item
             assert "date" in item
+            _check_control_get_method("self", client, item)
+            _check_control_get_method("profile", client, item)
 
     def test_student_get(self, client):
         """Succesfully gets all assessments from student assessment collection"""
@@ -628,7 +649,7 @@ class TestAssessmentCollection(object):
         _check_control_get_method("self", client, body)
         _check_control_get_method("studman:assessments-all", client, body)
         _check_control_get_method("studman:student", client, body)
-        assert len(body) == 3
+        assert len(body["items"]) == 2
         for item in body["items"]:
             assert "course_id" in item
             assert "student_id" in item
@@ -715,6 +736,14 @@ class TestAssessmentItem(object):
                           str(self.TEST_STUDENT_ID) + "/")
         assert resp.status_code == 200
         body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("collection", client, body)
+        _check_control_put_method("edit", client, body, _get_existing_assessment_json(), "course_id")
+        _check_control_delete_method("studman:delete", client, body)
+        _check_control_get_method("studman:student", client, body)
+        _check_control_get_method("studman:course", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
         assert body["course_id"] == 1
         assert body["student_id"] == 1
         assert body["grade"] == 5

@@ -4,6 +4,8 @@ This module contains all the classes related to the Course resource:
  - a singular course
  - the related URL converter
 """
+import json
+
 from flask import request, url_for, Response
 from flask_restful import Resource
 from jsonschema import validate, ValidationError
@@ -13,6 +15,8 @@ from werkzeug.routing import BaseConverter
 
 from studentmanager import cache
 from studentmanager import db
+from studentmanager.builder import StudentManagerBuilder, create_error_response
+from studentmanager.constants import COURSE_PROFILE, LINK_RELATIONS_URL, MASON
 from studentmanager.models import Course, require_admin_key
 from studentmanager.utils import request_path_cache_key
 
@@ -25,11 +29,22 @@ class CourseCollection(Resource):
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self):
         """Get the list of courses from the database"""
-        courses = Course.query.all()
 
-        courses_list = [c.serialize(short_form=True) for c in courses]
+        body = StudentManagerBuilder(items=[])
 
-        return courses_list
+        for course in Course.query.all():
+            item = StudentManagerBuilder(course.serialize(short_form=True))
+            item.add_control("self", url_for('api.courseitem', course=course))
+            item.add_control("profile", COURSE_PROFILE)
+            body["items"].append(item)
+
+        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_control("self", url_for('api.coursecollection'))
+        body.add_control_add_course()
+        body.add_control_all_students()
+        body.add_control_all_assessments()
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     @require_admin_key
     def post(self):
@@ -43,7 +58,7 @@ class CourseCollection(Resource):
         try:
             validate(request.json, Course.json_schema())
         except ValidationError:
-            return "JSON format is not valid", 400
+            return create_error_response(400, 'Bad Request', "Invalid request format")
 
         course = Course()
         course.deserialize(request.json)
@@ -56,7 +71,12 @@ class CourseCollection(Resource):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return f"Course already exists with code '{course.code}'", 409
+            return create_error_response(
+                409,
+                'Conflict',
+                f"Course with code '{course.code}' already exists."
+            )
+
         self._clear_cache()
         return Response(
             status=201,
@@ -81,7 +101,21 @@ class CourseItem(Resource):
     def get(self, course):
         """Returns the representation of the course
         :param course: takes a student object containing the information about the student"""
-        return course.serialize()
+
+        body = StudentManagerBuilder(course.serialize())
+
+        self_url = url_for('api.courseitem', course=course)
+
+        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_control("self", self_url)
+        body.add_control("profile", COURSE_PROFILE)
+        body.add_control_put("Modify a course", self_url, Course.json_schema())
+        body.add_control_delete("Delete a course", self_url)
+        body.add_control("collection", url_for('api.coursecollection'))
+        body.add_control_all_assessments()
+        body.add_control_course_assessments(course)
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     @require_admin_key
     def put(self, course):
@@ -96,19 +130,23 @@ class CourseItem(Resource):
         try:
             validate(request.json, Course.json_schema())
         except ValidationError as exc:
-            return str(exc), 400
+            return create_error_response(400, 'Bad Request', "Invalid request format")
 
         course.deserialize(request.json)
 
         if not isinstance(course.ects, int):
-            return "Ects value must be an integer", 400
+            return create_error_response(400, 'Bad Request', 'Ects must be an integer')
 
         try:
             db.session.add(course)
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return f"Course with code '{course.code}' already exists.", 409
+            return create_error_response(
+                409,
+                'Conflict',
+                f"Course with code '{course.code}' already exists."
+            )
         self._clear_cache()
         return Response(status=204)
 

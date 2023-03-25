@@ -54,12 +54,26 @@ class CourseAssessmentCollection(Resource):
 
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, course):
-        """Get the list of assessments from the database"""
-        assessments = Assessment.query.filter_by(
-            course_id=course.course_id).all()
-        assessments_list = [c.serialize() for c in assessments]
+        """
+        The collection of all assessments of a specific course,
+            reachable at '/api/courses/<course_id>/assessments/''
+        """
+        body = StudentManagerBuilder(items=[])
 
-        return assessments_list
+        for assessment in Assessment.query.filter_by(course_id=course.course_id).all():
+            item = StudentManagerBuilder(assessment.serialize())
+            item.add_control("self", url_for('api.courseassessmentitem',
+                                             student=assessment.student,
+                                             course=assessment.course))
+            item.add_control("profile", ASSESSMENT_PROFILE)
+            body["items"].append(item)
+
+        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_control("self", url_for('api.courseassessmentcollection', course=course))
+        body.add_control_all_assessments()
+        body.add_control_get_course(course)
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
 
 class StudentAssessmentCollection(Resource):
@@ -225,7 +239,7 @@ class StudentAssessmentItem(Resource):
             return create_error_response(400, 'Bad Request', 'JSON format is not valid')
 
         except ValueError:
-            return create_error_response(400, 'Bad Request', 'Date_of_birth not in iso format')
+            return create_error_response(400, 'Bad Request', 'Date not in iso format')
 
         try:
             db.session.add(assessment)
@@ -280,12 +294,24 @@ class CourseAssessmentItem(Resource):
         Returns the serialized list of assessments
         """
 
-        assessment = Assessment.query \
-            .filter_by(student_id=student.student_id) \
-            .filter_by(course_id=course.course_id) \
-            .first()
+        body = StudentManagerBuilder(Assessment.query
+                                     .filter_by(course_id=course.course_id)
+                                     .filter_by(student_id=student.student_id)
+                                     .first().serialize())
 
-        return assessment.serialize()
+        self_url = url_for('api.courseassessmentitem', student=student, course=course)
+
+        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_control("self", self_url)
+        body.add_control("profile", ASSESSMENT_PROFILE)
+        body.add_control("collection", url_for('api.courseassessmentcollection', course=course))
+        body.add_control_put("Modify a course's assessment", self_url, Assessment.json_schema())
+        body.add_control_delete("Delete a course's assessment", self_url)
+        body.add_control_get_student(student)
+        body.add_control_get_course(course)
+        body.add_control_all_assessments()
+
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     @require_assessments_key
     def put(self, student, course):
@@ -307,13 +333,13 @@ class CourseAssessmentItem(Resource):
             assessment.deserialize(request.json)
 
             if not isinstance(assessment.grade, int):
-                return "Grade value must be an integer", 400
+                return create_error_response(400, "Bad Request", 'Grade value must be an integer')
 
         except ValidationError as exc:
-            return str(exc), 400
+            return create_error_response(400, 'Bad Request', 'JSON format is not valid')
 
         except ValueError:
-            return 'Date_of_birth not in iso format', 400
+            return create_error_response(400, 'Bad Request', 'Date not in iso format')
 
         try:
             db.session.add(assessment)
