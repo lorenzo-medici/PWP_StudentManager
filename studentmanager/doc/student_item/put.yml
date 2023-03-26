@@ -1,4 +1,4 @@
-description: Add a new student
+description: Modify an existing student
 parameters:
   - $ref: '#/components/parameters/student'
 requestBody:
