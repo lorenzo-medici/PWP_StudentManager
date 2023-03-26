@@ -1,6 +1,6 @@
 description: Add a new course
-parameters:
-  - $ref: '#/components/parameters/course'
+#parameters:
+#  - $ref: '#/components/parameters/course'
 requestBody:
   description: Json document that contain basic data about the new course
   content:
