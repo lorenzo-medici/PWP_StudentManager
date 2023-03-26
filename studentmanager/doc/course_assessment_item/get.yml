@@ -1,1 +1,67 @@
-description: TODO
+description: Gets the assesment of a given student in a given course
+parameters:
+  - $ref: '#/components/parameters/course'
+  - $ref: '#/components/parameters/student'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            collection:
+              href: /api/courses/1/assessments/
+            edit:
+              encoding: json
+              href: /api/courses/1/assessments/1/
+              method: PUT
+              schema:
+                properties:
+                  course_id:
+                    description: Course identifier that this assessment belongs to
+                    type: number
+                  date:
+                    description: Date of assessment marking in format yyyy-mm-dd
+                    format: date-time
+                    type: string
+                  grade:
+                    description: Achieved grade on this assessment
+                    type: number
+                  student_id:
+                    description: Student identifier that this assessment belongs to
+                    type: number
+                required:
+                - course_id
+                - student_id
+                - grade
+                - date
+                type: object
+              title: Modify a course's assessment
+            profile:
+              href: /profiles/assessment/
+            self:
+              href: /api/courses/1/assessments/1/
+            studman:assessments-all:
+              href: /api/assessments/
+              method: GET
+              title: The collection of all assessments
+            studman:course:
+              href: /api/courses/1/
+              method: GET
+              title: Get the course this assessment is assigned to
+            studman:delete:
+              href: /api/courses/1/assessments/1/
+              method: DELETE
+              title: Delete a course's assessment
+            studman:student:
+              href: /api/students/1/
+              method: GET
+              title: Get the student this assessment is assigned to
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          course_id: 1
+          date: '1993-02-08'
+          grade: 5
+          student_id: 1
+  '404':
+    description: The assessment corresponding to the student and course was not found
