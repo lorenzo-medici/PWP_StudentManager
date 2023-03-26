@@ -1,6 +1,4 @@
 description: Gets a list of all the students
-parameters:
-  - $ref: '#/components/parameters/student'
 responses:
   '200':
     content:
