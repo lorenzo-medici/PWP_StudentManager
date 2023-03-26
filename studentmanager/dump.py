@@ -21,7 +21,7 @@ DOC_TEMPLATE = {
         }
 }
 
-resp_json = requests.get(SERVER_ADDR + "/students/1/").json()
+resp_json = requests.get(SERVER_ADDR + "/students/1/assessments/1/").json()
 DOC_TEMPLATE["responses"]["200"]["content"]["application/vnd.mason+json"]["example"] = resp_json
-with open(os.path.join(DOC_ROOT, "student_item/get.yml"), "w") as target:
+with open(os.path.join(DOC_ROOT, "student_assessment_item/get.yml"), "w") as target:
     target.write(yaml.dump(DOC_TEMPLATE, default_flow_style=False))
