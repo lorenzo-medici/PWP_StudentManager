@@ -1,16 +1,16 @@
 description: Add new assessment taken by given student in a given course
-parameters:
-  - $ref: '#/components/parameters/course'
-  - $ref: '#/components/parameters/student'
-responses:
-  '201':
-    description: The assessment was created successfully
-    headers:
-      Location:
-        description: URI of the new assessment
-        schema:
-          type: string
-  '400':
-    description: The request body was not valid
-  '409':
-    description: An assessment for this student already exist in this course
+#parameters:
+#  - $ref: '#/components/parameters/course'
+#  - $ref: '#/components/parameters/student'
+#responses:
+#  '201':
+#    description: The assessment was created successfully
+#    headers:
+#      Location:
+#        description: URI of the new assessment
+#        schema:
+#          type: string
+#  '400':
+#    description: The request body was not valid
+#  '409':
+#    description: An assessment for this student already exist in this course
