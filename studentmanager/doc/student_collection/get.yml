@@ -1,78 +1,80 @@
 description: Gets a list of all the students
-#responses:
-#  '200':
-#    content:
-#      application/vnd.mason+json:
-#        example:
-#          '@controls':
-#            self:
-#              href: /api/students/
-#            studman:add-student:
-#              encoding: json
-#              href: /api/students/
-#              method: POST
-#              schema:
-#                properties:
-#                  date_of_birth:
-#                    description: Student birth date in the format yyyy-mm-dd
-#                    format: date-time
-#                    type: string
-#                  first_name:
-#                    description: Student first name
-#                    type: string
-#                  last_name:
-#                    description: Student last name
-#                    type: string
-#                  ssn:
-#                    description: student social security number
-#                    type: string
-#                required:
-#                - first_name
-#                - last_name
-#                - ssn
-#                - date_of_birth
-#                type: object
-#              title: Add a new student
-#            studman:assessments-all:
-#              href: /api/assessments/
-#              method: GET
-#              title: The collection of all assessments
-#            studman:courses-all:
-#              href: /api/courses/
-#              method: GET
-#              title: The collection of all courses
-#          '@namespaces':
-#            studman:
-#              name: /studentmanager/link-relations/
-#          items:
-#          - '@controls':
-#              profile:
-#                href: /profiles/student/
-#              self:
-#                href: /api/students/1/
-#            date_of_birth: '1980-06-05'
-#            first_name: Draco
-#            last_name: Malfoy
-#            ssn: 050680-6367
-#            student_id: 1
-#          - '@controls':
-#              profile:
-#                href: /profiles/student/
-#              self:
-#                href: /api/students/2/
-#            date_of_birth: '1980-07-31'
-#            first_name: Harry
-#            last_name: Potter
-#            ssn: 310780-6176
-#            student_id: 2
-#          - '@controls':
-#              profile:
-#                href: /profiles/student/
-#              self:
-#                href: /api/students/3/
-#            date_of_birth: '1979-09-19'
-#            first_name: Hermione
-#            last_name: Granger
-#            ssn: 190979-8400
-#            student_id: 3
-#
+parameters:
+  - $ref: '#/components/parameters/student'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            self:
+              href: /api/students/
+            studman:add-student:
+              encoding: json
+              href: /api/students/
+              method: POST
+              schema:
+                properties:
+                  date_of_birth:
+                    description: Student birth date in the format yyyy-mm-dd
+                    format: date-time
+                    type: string
+                  first_name:
+                    description: Student first name
+                    type: string
+                  last_name:
+                    description: Student last name
+                    type: string
+                  ssn:
+                    description: student social security number
+                    type: string
+                required:
+                - first_name
+                - last_name
+                - ssn
+                - date_of_birth
+                type: object
+              title: Add a new student
+            studman:assessments-all:
+              href: /api/assessments/
+              method: GET
+              title: The collection of all assessments
+            studman:courses-all:
+              href: /api/courses/
+              method: GET
+              title: The collection of all courses
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          items:
+          - '@controls':
+              profile:
+                href: /profiles/student/
+              self:
+                href: /api/students/1/
+            date_of_birth: '1980-06-05'
+            first_name: Draco
+            last_name: Malfoy
+            ssn: 050680-6367
+            student_id: 1
+          - '@controls':
+              profile:
+                href: /profiles/student/
+              self:
+                href: /api/students/2/
+            date_of_birth: '1980-07-31'
+            first_name: Harry
+            last_name: Potter
+            ssn: 310780-6176
+            student_id: 2
+          - '@controls':
+              profile:
+                href: /profiles/student/
+              self:
+                href: /api/students/3/
+            date_of_birth: '1979-09-19'
+            first_name: Hermione
+            last_name: Granger
+            ssn: 190979-8400
+            student_id: 3
+  
