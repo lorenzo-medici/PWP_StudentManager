@@ -12,7 +12,7 @@ requestBody:
         ssn: "050680-6367"
 responses:
   '201':
-    description: The student have been created successfully
+    description: The student has been created successfully
     headers:
       Location:
         description: URI of the new student

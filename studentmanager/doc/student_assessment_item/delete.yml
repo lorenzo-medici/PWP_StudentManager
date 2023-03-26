@@ -5,6 +5,6 @@ parameters:
 
 responses:
   '204':
-    description: The assessment have been deleted successfully
+    description: The assessment has been deleted successfully
   '404':
     description: The corresponding assessment was not found
