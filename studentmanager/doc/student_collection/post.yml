@@ -1,21 +1,21 @@
 description: Add a new student
-#parameters:
-#  $ref: '#/components/parameters/student'
-#requestBody:
-#  description: Json document that contain basic data about the new student
-#  content:
-#    application/json:
-#      schema:
-#        $ref: '#/components/schemas/Student'
-#      example:
-#        first_name: "Draco"
-#        last_name: "Malfoy"
-#        date_of_birth: "1980-06-05"
-#        ssn: "050680-6367"
-#responses:
-#  '201':
-#    description: The student have been created succesfully
-#  '400':
-#    description: The request body was not valid
-#  '409':
-#    description: A student with the same id already exists
+parameters:
+  - $ref: '#/components/parameters/student'
+requestBody:
+  description: Json document that contain basic data about the new student
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Student'
+      example:
+        first_name: "Draco"
+        last_name: "Malfoy"
+        date_of_birth: "1980-06-05"
+        ssn: "050680-6367"
+responses:
+  '201':
+    description: The student have been created succesfully
+  '400':
+    description: The request body was not valid
+  '409':
+    description: A student with the same id already exists
