@@ -23,4 +23,4 @@ responses:
   '400':
     description: The request body was not valid
   '409':
-    description: A student with the same id already exists
+    description: A course with the same id already exists

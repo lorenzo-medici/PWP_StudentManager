@@ -1,4 +1,4 @@
-description: Gets the assesment of a given student in a given course
+description: Gets the assessment of a given student in a given course
 parameters:
   - $ref: '#/components/parameters/course'
   - $ref: '#/components/parameters/student'

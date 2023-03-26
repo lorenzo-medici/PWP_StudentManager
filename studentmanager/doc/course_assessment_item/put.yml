@@ -9,6 +9,8 @@ requestBody:
       schema:
         $ref: '#/components/schemas/Assessment'
       example:
+        student_id: 1
+        course_id: 1
         grade: 5
         date: "1993-02-08"
 

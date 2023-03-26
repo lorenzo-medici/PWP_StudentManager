@@ -1,6 +1,4 @@
 description: Add a new student
-#parameters:
-#  - $ref: '#/components/parameters/student'
 requestBody:
   description: Json document that contain basic data about the new student
   content:
@@ -14,7 +12,7 @@ requestBody:
         ssn: "050680-6367"
 responses:
   '201':
-    description: The student have been created succesfully
+    description: The student have been created successfully
     headers:
       Location:
         description: URI of the new student
@@ -23,4 +21,4 @@ responses:
   '400':
     description: The request body was not valid
   '409':
-    description: A student with the same id already exists
+    description: The ssn is invalid or already present or the date_of_birth is not in the past

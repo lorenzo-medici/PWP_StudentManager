@@ -1,4 +1,4 @@
-description: delete an existing course assesment
+description: delete an existing course assessment
 parameters:
   - $ref: '#/components/parameters/course'
   - $ref: '#/components/parameters/student'

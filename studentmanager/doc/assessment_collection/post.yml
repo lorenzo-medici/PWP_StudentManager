@@ -1,6 +1,6 @@
 description: Add new assessment taken by given student in a given course
 requestBody:
-  description: Json document that contain basic data about the new assesment
+  description: Json document that contain basic data about the new assessment
   content:
     application/json:
       schema:

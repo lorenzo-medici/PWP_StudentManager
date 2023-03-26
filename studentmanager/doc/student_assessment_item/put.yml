@@ -3,12 +3,14 @@ parameters:
   - $ref: '#/components/parameters/student'
   - $ref: '#/components/parameters/course'
 requestBody:
-  description: Json document that contain basic data about the new assesment
+  description: Json document that contain basic data about the new assessment
   content:
     application/json:
       schema:
         $ref: '#/components/schemas/Assessment'
       example:
+        student_id: 1
+        course_id: 1
         grade: 5
         date: "1993-02-08"
 
