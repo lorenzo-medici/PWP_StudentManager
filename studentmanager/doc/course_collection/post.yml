@@ -15,6 +15,11 @@ requestBody:
 responses:
   '201':
     description: The course have been created successfully
+    headers:
+      Location:
+        description: URI of the new course
+        schema:
+          type: string
   '400':
     description: The request body was not valid
   '409':

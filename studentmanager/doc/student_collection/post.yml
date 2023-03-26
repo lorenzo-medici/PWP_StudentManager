@@ -15,6 +15,11 @@ requestBody:
 responses:
   '201':
     description: The student have been created succesfully
+    headers:
+      Location:
+        description: URI of the new student
+        schema:
+          type: string
   '400':
     description: The request body was not valid
   '409':
