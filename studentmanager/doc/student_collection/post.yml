@@ -1,6 +1,6 @@
 description: Add a new student
-parameters:
-  - $ref: '#/components/parameters/student'
+#parameters:
+#  - $ref: '#/components/parameters/student'
 requestBody:
   description: Json document that contain basic data about the new student
   content:
