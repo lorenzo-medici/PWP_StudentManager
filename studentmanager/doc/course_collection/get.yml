@@ -1,6 +1,4 @@
 description: Gets the list of all the courses
-parameters:
-  - $ref: '#/components/parameters/course'
 responses:
   '200':
     content:
