@@ -1,0 +1,46 @@
+<h1>CourseManager API: Course Profile</h1>
+
+In the API, a Course resource represents the information of a course offered by the University.
+It holds the following attributes:
+
+<ul>
+    <li><b>title</b>: the course's title. It is a string limited to 255 characters in length.</li>
+    <li><b>teacher</b>: the name of the course's teacher. It is a string limited to 255 characters in length.</li>
+    <li><b>code</b>: the course's unique code. It is a string limited to 12 characters in length.</li>
+    <li><b>ects</b>: the amount of ECTS the course grants upon completion. It is an integer value.</li>
+</ul>
+All attributes are mandatory when adding or modyfing a course. A complete JSON schema for courses can be obtained from the Course.json_schema method, or by the hypermedia controls related to adding or modyfing courses.
+
+<h2>Endpoints</h2>
+
+
+All courses are stored in the CourseCollection resource (/api/courses/). This collection allows to add new courses to the database.
+<br/><br/>
+
+Individual courses can be accessed from the CourseItem resource (/api/courses/&lt;course_id&gt;/). This resource allows editing and deletion of an individual course.
+<br/>
+It also allows access to the course's assessment collection (/api/courses/&lt;course_id&gt;/assessments/).
+
+<h2>Relevant link relations</h2>
+
+<ul>
+    <li><b>self</b>: carried by all Collections and Items returned by the API. In particular, each course returned by
+        the CourseCollection will carry it.
+    </li>
+    <li><b>profile</b>: points to this page.</li>
+    <li><b>collection</b>: points from each Item resource to the respective Collection. (i.e. CourseItem resources will
+        point to the CourseCollection).
+    </li>
+    <li><b>studman:students-all, studman:assessments-all</b>: point to the other two main Collections in our API
+        structure: StudentCollection and AssessmentCollection.
+    </li>
+    <li><b>studman:add-course</b>: carried by CourseCollection, pointing to itself specifying the POST method and the
+        required Course json schema.
+    </li>
+    <li><b>edit, studman:delete</b>: carried by CourseItem, pointing to itself with PUT and DELETE methods respectively.
+    </li>
+    <li><b>studman:course</b>: carried by the CourseAssessmentCollection resource, points to the relevant Course.</li>
+    <li><b>studman:course-assessments</b>: inverse of the previous control, carried by a CourseItem, points to the
+        relevant CourseAssessmentCollection.
+    </li>
+</ul>

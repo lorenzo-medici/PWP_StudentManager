@@ -31,16 +31,17 @@ Revision and grading of the deliverable for Deadline 2
 
 ## Meeting 3.
 
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE: 10/03/2023**
+* **ASSISTANTS: Mika Oja**
 
 ### Minutes
 
-*Summary of what was discussed during the meeting*
+Revision and grading of the deliverable for Deadline 3, discussion about using database IDs in the URL.
 
 ### Action points
 
-*List here the actions points discussed with assistants*
+ - In the "Uniform Interface" wiki section state that PUT 'replaces' a resource instead of updating it. This doesn't have any effect on our implementation since we don't have optional fields.
+ - Debate whether to use `course_code` in the URl for courses, to avoid exposing database IDs. We can't do that at the moment for students since the only other unique field is the Social Security Number.
 
 ## Meeting 4.
 

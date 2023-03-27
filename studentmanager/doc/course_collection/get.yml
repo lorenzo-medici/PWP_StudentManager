@@ -1,0 +1,76 @@
+description: Gets the list of all the courses
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            self:
+              href: /api/courses/
+            studman:add-course:
+              encoding: json
+              href: /api/courses/
+              method: POST
+              schema:
+                properties:
+                  code:
+                    description: Code of the course
+                    type: string
+                  ects:
+                    description: Number of ECTS granted by the course
+                    type: number
+                  teacher:
+                    description: Teacher responsible for the course
+                    type: string
+                  title:
+                    description: Name of the course
+                    type: string
+                required:
+                - title
+                - teacher
+                - code
+                - ects
+                type: object
+              title: Add a new course
+            studman:assessments-all:
+              href: /api/assessments/
+              method: GET
+              title: The collection of all assessments
+            studman:students-all:
+              href: /api/students/
+              method: GET
+              title: The collection of all students
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          items:
+          - '@controls':
+              profile:
+                href: /profiles/course/
+              self:
+                href: /api/courses/1/
+            code: '004723'
+            course_id: 1
+            ects: 5
+            teacher: Minerva Mcgonagall
+            title: Transfiguration
+          - '@controls':
+              profile:
+                href: /profiles/course/
+              self:
+                href: /api/courses/2/
+            code: '006031'
+            course_id: 2
+            ects: 8
+            teacher: Professur Severus Snape
+            title: Defence Against the Dark Arts
+          - '@controls':
+              profile:
+                href: /profiles/course/
+              self:
+                href: /api/courses/3/
+            code: '006032'
+            course_id: 3
+            ects: 8
+            teacher: Professur Severus Snape
+            title: Advanced Defence Against the Dark Arts

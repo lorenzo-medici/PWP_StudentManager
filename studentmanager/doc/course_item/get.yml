@@ -1,0 +1,75 @@
+description: Get the course's data corresponding to the course id
+parameters:
+  - $ref: '#/components/parameters/course'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            collection:
+              href: /api/courses/
+            edit:
+              encoding: json
+              href: /api/courses/1/
+              method: PUT
+              schema:
+                properties:
+                  code:
+                    description: Code of the course
+                    type: string
+                  ects:
+                    description: Number of ECTS granted by the course
+                    type: number
+                  teacher:
+                    description: Teacher responsible for the course
+                    type: string
+                  title:
+                    description: Name of the course
+                    type: string
+                required:
+                - title
+                - teacher
+                - code
+                - ects
+                type: object
+              title: Modify a course
+            profile:
+              href: /profiles/course/
+            self:
+              href: /api/courses/1/
+            studman:assessments-all:
+              href: /api/assessments/
+              method: GET
+              title: The collection of all assessments
+            studman:course-assessments:
+              href: /api/courses/1/assessments/
+              method: GET
+              title: Get all the assessments of a course
+            studman:delete:
+              href: /api/courses/1/
+              method: DELETE
+              title: Delete a course
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          assessments:
+          - course_id: 1
+            date: '1993-02-08'
+            grade: 5
+            student_id: 1
+          - course_id: 1
+            date: '1993-02-08'
+            grade: 3
+            student_id: 2
+          - course_id: 1
+            date: '1993-02-08'
+            grade: 5
+            student_id: 3
+          code: '004723'
+          course_id: 1
+          ects: 5
+          teacher: Minerva Mcgonagall
+          title: Transfiguration
+  '404':
+    description: Course not found

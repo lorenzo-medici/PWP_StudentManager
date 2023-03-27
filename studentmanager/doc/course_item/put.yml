@@ -1,0 +1,21 @@
+description: Modify a course
+parameters:
+  - $ref: '#/components/parameters/course'
+requestBody:
+  description: Json document that contain basic data about the course
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Course'
+      example:
+        title: "Transfiguration"
+        teacher: "Minerva Mcgonagall"
+        code: "004723"
+        ects: 5
+responses:
+  '204':
+    description: The course have been created successfully
+  '404':
+    description: The corresponding course have not been found
+  '400':
+    description: The request body was not valid

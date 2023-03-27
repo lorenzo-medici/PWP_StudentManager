@@ -1,0 +1,58 @@
+<h1>CourseManager API: Assessment Profile</h1>
+
+In the API, an Assessment resource represents the information of an assessment a student received for a course.
+It holds the following attributes:
+
+<ul>
+    <li><b>course_id</b>: the course_id of the course this assessment is related to. It is an integer value that <em>must</em>
+        refer to an existing course.
+    </li>
+    <li><b>student_id</b>: the student_id of the student that has completed this asseessment. It is an integer value
+        that <em>must</em> refer to an existing student.
+    </li>
+    <li><b>grade</b>: the grade the student received during the assessment. It is an integer value ranging from 0 to 5,
+        with 0 representing a Fail grade.
+    </li>
+    <li><b>date</b>: the date the assessment has been carried on. It is stored as an SQLAlchemy.Date. It is inputted to
+        and outputted from the API as a standard ISO date ('yyyy-mm-dd'). It cannot be in the future with respect to the
+        day it is inserted.
+    </li>
+</ul>
+All attributes are mandatory when adding or modyfing an assessment. A complete JSON schema for assessments can be obtained from the Assessment.json_schema method, or by the hypermedia controls related to adding or modyfing assessments.
+<br/>
+The pair of course_id and student_id uniquely identifies the assessment.
+
+<h2>Endpoints</h2>
+
+
+All assessments are stored in the AssessmentCollection resource (/api/assessments/). This collection allows to add new assessments to the database.
+<br/><br/>
+
+Individual assessments can be accessed from the StudentAssessmentItem or CourseAssessmentItem resources (/api/courses/&lt;course_id&gt;/assessments/&lt;student_id&gt;/ or /api/cstudents/&lt;student_id&gt;/assessments/&lt;course_id&gt;/). This resource allows editing and deletion of an individual assessment.
+<br/>
+It also allows access to the parent assessment collection (/api/courses/&lt;course_id&gt;/assessments/ or /api/students/&lt;student_id&gt;/assessments/).
+
+<h2>Relevant link relations</h2>
+
+<ul>
+    <li><b>self</b>: carried by all Collections and Items returned by the API. In particular, each assessment returned
+        by the AssessmentCollection will carry it, pointing to a CourseAssessmentItem resource.
+    </li>
+    <li><b>profile</b>: points to this page.</li>
+    <li><b>collection</b>: points from each Item resource to the respective Collection. (i.e. AssessmentItem resources
+        will point to the AssessmentCollection).
+    </li>
+    <li><b>edit, studman:delete</b>: carried by StudentItem, pointing to itself with PUT and DELETE methods
+        respectively.
+    </li>
+    <li><b>studman:students-all, studman:courses-all</b>: point to the other two main Collections in our API structure:
+        StudentCollection and CourseCollection.
+    </li>
+    <li><b>studman:add-assessment</b>: carried by AssessmentCollection, pointing to itself specifying the POST method
+        and the required Assessment json schema.
+    </li>
+    <li><b>studman:student, studman:course</b>: carried by all assessment collections and items. Point to the related
+        student or course, when applicable (e.g. StudentAssessmentCollection will only hold the studman:student
+        control).
+    </li>
+</ul>

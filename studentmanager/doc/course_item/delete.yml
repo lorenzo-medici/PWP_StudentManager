@@ -1,0 +1,8 @@
+description: delete an existing course
+parameters:
+  - $ref: '#/components/parameters/course'
+responses:
+  '204':
+    description: The course have been deleted successfully
+  '404':
+    description: The corresponding course was not found

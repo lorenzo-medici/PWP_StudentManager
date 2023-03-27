@@ -1,0 +1,8 @@
+description: delete an existing student
+parameters:
+  - $ref: '#/components/parameters/student'
+responses:
+  '204':
+    description: The student have been deleted successfully
+  '404':
+    description: The corresponding student was not found

@@ -1,0 +1,107 @@
+---
+swagger: 2.0
+openapi: 3.0.3
+servers:
+  - url: /
+components:
+  parameters:
+    course:
+      description: Course's unique code
+      in: path
+      name: course
+      required: true
+      schema:
+        type: string
+    student:
+      description: Student's unique ID
+      in: path
+      name: student
+      required: true
+      schema:
+        type: string
+  schemas:
+    Course:
+      properties:
+        code:
+          description: Code of the course
+          type: string
+        ects:
+          description: Number of ECTS granted by the course
+          type: number
+        teacher:
+          description: Teacher responsible for the course
+          type: string
+        title:
+          description: Name of the course
+          type: string
+      required:
+        - title
+        - teacher
+        - code
+        - ects
+      type: object
+    Student:
+      properties:
+        date_of_birth:
+          description: Student birth date in the format yyyy-mm-dd
+          format: date-time
+          type: string
+        first_name:
+          description: Student first name
+          type: string
+        last_name:
+          description: Student last name
+          type: string
+        ssn:
+          description: student social security number
+          type: string
+      required:
+        - first_name
+        - last_name
+        - ssn
+        - date_of_birth
+      type: object
+    Assessment:
+      properties:
+        course_id:
+          description: Course identifier that this assessment belongs to
+          type: number
+        date:
+          description: Date of assessment marking in format yyyy-mm-dd
+          format: date-time
+          type: string
+        grade:
+          description: Achieved grade on this assessment
+          type: number
+        student_id:
+          description: Student identifier that this assessment belongs to
+          type: number
+      required:
+        - course_id
+        - student_id
+        - grade
+        - date
+      type: object
+  securitySchemes:
+    adminKey:
+      type: apiKey
+      name: Studentmanager-Api-Key
+      in: header
+    assessmentKey:
+      type: apiKey
+      name: Studentmanager-Api-Key
+      in: header
+info:
+  title: PWP Student Manager
+  version: 0.0.1
+  description: |
+    This API is the coursework for the Programmable Web Project course
+    of spring 2023. It is a student manager system that stores courses, students and grades.
+  termsOfService: http://totally.not.placehold.er/
+  contact:
+    url: http://totally.not.placehold.er/
+    email: pwp-course@lists.oulu.fi
+    name: PWP Staff List
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html

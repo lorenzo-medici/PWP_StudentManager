@@ -1,0 +1,52 @@
+description: returns all the assessments of a course
+parameters:
+  - $ref: '#/components/parameters/course'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            self:
+              href: /api/courses/1/assessments/
+            studman:assessments-all:
+              href: /api/assessments/
+              method: GET
+              title: The collection of all assessments
+            studman:course:
+              href: /api/courses/1/
+              method: GET
+              title: Get the course this assessment is assigned to
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          items:
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/1/assessments/1/
+            course_id: 1
+            date: '1993-02-08'
+            grade: 5
+            student_id: 1
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/1/assessments/2/
+            course_id: 1
+            date: '1993-02-08'
+            grade: 3
+            student_id: 2
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/1/assessments/3/
+            course_id: 1
+            date: '1993-02-08'
+            grade: 5
+            student_id: 3
+  '404':
+    description: The course corresponding to the id was not found

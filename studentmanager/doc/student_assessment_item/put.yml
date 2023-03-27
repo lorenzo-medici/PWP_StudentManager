@@ -1,0 +1,28 @@
+description: Add new assessment taken by given student in a given course
+parameters:
+  - $ref: '#/components/parameters/student'
+  - $ref: '#/components/parameters/course'
+requestBody:
+  description: Json document that contain basic data about the new assessment
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Assessment'
+      example:
+        student_id: 1
+        course_id: 1
+        grade: 5
+        date: "1993-02-08"
+
+responses:
+  '204':
+    description: The assessment was modified successfully
+    headers:
+      Location:
+        description: URI of the assessment
+        schema:
+          type: string
+  '400':
+    description: The request body was not valid
+  '409':
+    description: An assessment for this student already exist in this course

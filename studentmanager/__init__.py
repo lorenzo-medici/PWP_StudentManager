@@ -5,9 +5,12 @@ This module is used to retrieve a working Flask application complete with all th
 
 import os
 
-from flask import Flask
+from flasgger import Swagger
+from flask import Flask, send_from_directory
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
+
+from studentmanager.constants import LINK_RELATIONS_URL
 
 db = SQLAlchemy()
 cache = Cache()
@@ -23,13 +26,21 @@ def create_app(test_config=None):
     :param test_config: A dictionary containing the app configuration parameters to use for Tests
     :return: a Flask app object
     """
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, instance_relative_config=True, static_folder='static')
     app.config.from_mapping(
         SECRET_KEY="dev",
         SQLALCHEMY_DATABASE_URI="sqlite:///" +
-                                os.path.join(app.instance_path, "StudentManager.db"),
+                                os.path.join(app.instance_path,
+                                             "StudentManager.db"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
+
+    app.config["SWAGGER"] = {
+        "title": "PWP Student Manager API",
+        "openapi": "3.0.3",
+        "uiversion": 3,
+        "doc_dir": "./doc",
+    }
 
     if test_config is None:
         app.config.from_pyfile("config.py", silent=True)
@@ -73,5 +84,17 @@ def create_app(test_config=None):
         app.config["CACHE_DIR"] = test_config["CACHE_DIR"]
 
     cache.init_app(app)
+
+    # Static routes related to profiles and link relations
+    # from sensorhub project example and Exercise 3 material on Lovelace
+    @app.route("/profiles/<resource>/")
+    def send_profile_html(resource):
+        return send_from_directory(app.static_folder, f'profiles/{resource}.html')
+
+    @app.route(LINK_RELATIONS_URL)
+    def send_link_relations_html():
+        return send_from_directory(app.static_folder, "link-relations.html")
+
+    Swagger(app, template_file="doc/doc.yml")
 
     return app

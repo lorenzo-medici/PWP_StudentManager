@@ -1,0 +1,100 @@
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            self:
+              href: /api/assessments/
+            studman:add-assessment:
+              encoding: json
+              href: /api/assessments/
+              method: POST
+              schema:
+                properties:
+                  course_id:
+                    description: Course identifier that this assessment belongs to
+                    type: number
+                  date:
+                    description: Date of assessment marking in format yyyy-mm-dd
+                    format: date-time
+                    type: string
+                  grade:
+                    description: Achieved grade on this assessment
+                    type: number
+                  student_id:
+                    description: Student identifier that this assessment belongs to
+                    type: number
+                required:
+                - course_id
+                - student_id
+                - grade
+                - date
+                type: object
+              title: Add a new assessment
+            studman:courses-all:
+              href: /api/courses/
+              method: GET
+              title: The collection of all courses
+            studman:students-all:
+              href: /api/students/
+              method: GET
+              title: The collection of all students
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          items:
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/1/assessments/1/
+            course_id: 1
+            date: '1993-02-08'
+            grade: 5
+            student_id: 1
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/1/assessments/2/
+            course_id: 1
+            date: '1993-02-08'
+            grade: 3
+            student_id: 2
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/2/assessments/2/
+            course_id: 2
+            date: '1993-02-17'
+            grade: 4
+            student_id: 2
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/2/assessments/3/
+            course_id: 2
+            date: '1993-02-17'
+            grade: 5
+            student_id: 3
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/1/assessments/3/
+            course_id: 1
+            date: '1993-02-08'
+            grade: 5
+            student_id: 3
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/courses/2/assessments/1/
+            course_id: 2
+            date: '1993-02-17'
+            grade: 4
+            student_id: 1

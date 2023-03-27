@@ -15,6 +15,7 @@ import secrets
 
 import click
 import pytest
+import yaml
 from flask import request
 from flask.cli import with_appcontext
 from sqlalchemy import event, CheckConstraint
@@ -129,7 +130,7 @@ class Assessment(db.Model):
             "type": "object",
             "required": ["course_id", "student_id", "grade", "date"]
         }
-        props = schema["proprieties"] = {}
+        props = schema["properties"] = {}
         props["course_id"] = {
             "description": "Course identifier that this assessment belongs to",
             "type": "number",
@@ -257,7 +258,7 @@ class Student(db.Model):
             "type": "object",
             "required": ["first_name", "last_name", "ssn", "date_of_birth"]
         }
-        props = schema["proprieties"] = {}
+        props = schema["properties"] = {}
         props["ssn"] = {
             "description": "student social security number",
             "type": "string",
@@ -589,3 +590,13 @@ def generate_master_key():
     print("assessment key: " + token)
 
     db.session.commit()
+
+
+@click.command("yamlschema")
+def dump_yaml_schemas():
+    """
+    CLI flag, outputs all models' YAML schemas
+    """
+    print(yaml.dump(Assessment.json_schema()))
+    print(yaml.dump(Student.json_schema()))
+    print(yaml.dump(Course.json_schema()))

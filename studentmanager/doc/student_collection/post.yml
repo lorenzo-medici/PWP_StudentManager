@@ -1,0 +1,24 @@
+description: Add a new student
+requestBody:
+  description: Json document that contain basic data about the new student
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Student'
+      example:
+        first_name: "Draco"
+        last_name: "Malfoy"
+        date_of_birth: "1980-06-05"
+        ssn: "050680-6367"
+responses:
+  '201':
+    description: The student has been created successfully
+    headers:
+      Location:
+        description: URI of the new student
+        schema:
+          type: string
+  '400':
+    description: The request body was not valid
+  '409':
+    description: The ssn is invalid or already present or the date_of_birth is not in the past
