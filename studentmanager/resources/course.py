@@ -145,7 +145,7 @@ class CourseItem(Resource):
 
         try:
             validate(request.json, Course.json_schema())
-        except ValidationError as exc:
+        except ValidationError:
             return create_error_response(400, 'Bad Request', "Invalid request format")
 
         course.deserialize(request.json)

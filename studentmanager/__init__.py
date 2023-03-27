@@ -87,7 +87,6 @@ def create_app(test_config=None):
 
     # Static routes related to profiles and link relations
     # from sensorhub project example and Exercise 3 material on Lovelace
-    # TODO: Fill in pages
     @app.route("/profiles/<resource>/")
     def send_profile_html(resource):
         return send_from_directory(app.static_folder, f'profiles/{resource}.html')
