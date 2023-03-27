@@ -1,1 +1,72 @@
-description: TODO
+description: Gets the data regarding one single student
+parameters:
+  - $ref: '#/components/parameters/student'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            collection:
+              href: /api/students/
+            edit:
+              encoding: json
+              href: /api/students/1/
+              method: PUT
+              schema:
+                properties:
+                  date_of_birth:
+                    description: Student birth date in the format yyyy-mm-dd
+                    format: date-time
+                    type: string
+                  first_name:
+                    description: Student first name
+                    type: string
+                  last_name:
+                    description: Student last name
+                    type: string
+                  ssn:
+                    description: student social security number
+                    type: string
+                required:
+                - first_name
+                - last_name
+                - ssn
+                - date_of_birth
+                type: object
+              title: Modify a student
+            profile:
+              href: /profiles/student/
+            self:
+              href: /api/students/1/
+            studman:assessments-all:
+              href: /api/assessments/
+              method: GET
+              title: The collection of all assessments
+            studman:delete:
+              href: /api/students/1/
+              method: DELETE
+              title: Delete a student
+            studman:student-assessments:
+              href: /api/students/1/assessments/
+              method: GET
+              title: Get all the assessments of a student
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          assessments:
+          - course_id: 1
+            date: '1993-02-08'
+            grade: 5
+            student_id: 1
+          - course_id: 2
+            date: '1993-02-17'
+            grade: 4
+            student_id: 1
+          date_of_birth: '1980-06-05'
+          first_name: Draco
+          last_name: Malfoy
+          ssn: 050680-6367
+          student_id: 1
+  '404':
+    description: student not found

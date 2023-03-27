@@ -1,1 +1,10 @@
-description: TODO
+description: delete an existing student assessment
+parameters:
+  - $ref: '#/components/parameters/student'
+  - $ref: '#/components/parameters/course'
+
+responses:
+  '204':
+    description: The assessment has been deleted successfully
+  '404':
+    description: The corresponding assessment was not found

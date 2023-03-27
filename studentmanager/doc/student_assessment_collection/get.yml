@@ -1,1 +1,43 @@
-description: TODO
+description: Gets all the assessment of given student
+parameters:
+  - $ref: '#/components/parameters/student'
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            self:
+              href: /api/students/1/assessments/
+            studman:assessments-all:
+              href: /api/assessments/
+              method: GET
+              title: The collection of all assessments
+            studman:student:
+              href: /api/students/1/
+              method: GET
+              title: Get the student this assessment is assigned to
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          items:
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/students/1/assessments/1/
+            course_id: 1
+            date: '1993-02-08'
+            grade: 5
+            student_id: 1
+          - '@controls':
+              profile:
+                href: /profiles/assessment/
+              self:
+                href: /api/students/1/assessments/2/
+            course_id: 2
+            date: '1993-02-17'
+            grade: 4
+            student_id: 1
+  '404':
+    description: The student corresponding to the given id was not found
