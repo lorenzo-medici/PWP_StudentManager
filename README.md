@@ -25,6 +25,9 @@ The dependencies for this project are:
 |    jsonschema    | 4.17.3  |
 |     Werkzeug     |  2.2.2  |
 |    setuptools    | 65.5.1  |
+| flasgger | 0.9.5 |
+| PyYAML | 6.0 |
+
 
 These dependencies can be found in the file `requirements.txt` in the root directory of the project.
 
