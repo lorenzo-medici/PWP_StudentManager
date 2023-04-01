@@ -261,6 +261,20 @@ def _populate_db():
     db.session.commit()
 
 
+class TestEntrypoint(object):
+    ENTRYPOINT_URL = '/api/'
+
+    def test_get_entrypoint(self, client):
+        """Gets the netrypoint will all necessary hypermedia controls"""
+        resp = client.get(self.ENTRYPOINT_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("studman:students-all", client, body)
+        _check_control_get_method("studman:courses-all", client, body)
+        _check_control_get_method("studman:assessments-all", client, body)
+
+
 class TestCourseCollection(object):
     RESOURCE_URL = "/api/courses/"
 
