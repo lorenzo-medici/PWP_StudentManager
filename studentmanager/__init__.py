@@ -1,16 +1,17 @@
 """
 This module is used to retrieve a working Flask application complete with all the needed components
 """
-# SOURCE: Project Layout on Lovelace
-
+import json
 import os
 
 from flasgger import Swagger
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, Response
 from flask_caching import Cache
 from flask_sqlalchemy import SQLAlchemy
 
-from studentmanager.constants import LINK_RELATIONS_URL
+from studentmanager.constants import LINK_RELATIONS_URL, MASON
+
+# SOURCE: Project Layout on Lovelace
 
 db = SQLAlchemy()
 cache = Cache()
@@ -94,6 +95,45 @@ def create_app(test_config=None):
     @app.route(LINK_RELATIONS_URL)
     def send_link_relations_html():
         return send_from_directory(app.static_folder, "link-relations.html")
+
+    # avoids circular imports
+    from studentmanager.builder import StudentManagerBuilder
+
+    @app.route('/api/')
+    def api_entrypoint():
+        """
+        Entrypoint to the API
+        ---
+        responses:
+            '200':
+                description: List of important hypermedia controls
+                content:
+                     application/vnd.mason+json:
+                        example:
+                          '@controls':
+                            studman:assessments-all:
+                              href: /api/assessments/
+                              method: GET
+                              title: The collection of all assessments
+                            studman:courses-all:
+                              href: /api/courses/
+                              method: GET
+                              title: The collection of all courses
+                            studman:students-all:
+                              href: /api/students/
+                              method: GET
+                              title: The collection of all students
+                          '@namespaces':
+                            studman:
+                              name: /studentmanager/link-relations/
+
+        """
+        body = StudentManagerBuilder()
+        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_control_all_students()
+        body.add_control_all_courses()
+        body.add_control_all_assessments()
+        return Response(json.dumps(body), 200, mimetype=MASON)
 
     Swagger(app, template_file="doc/doc.yml")
 
