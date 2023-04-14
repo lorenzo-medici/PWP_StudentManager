@@ -15,7 +15,8 @@ from sqlalchemy.exc import IntegrityError
 
 from studentmanager import db, cache
 from studentmanager.builder import StudentManagerBuilder, create_error_response
-from studentmanager.constants import ASSESSMENT_PROFILE, MASON, LINK_RELATIONS_URL
+from studentmanager.constants \
+    import ASSESSMENT_PROFILE, MASON, LINK_RELATIONS_URL, NAMESPACE, DOC_FOLDER
 from studentmanager.models import Assessment, require_assessments_key
 from studentmanager.utils import request_path_cache_key
 
@@ -56,7 +57,7 @@ class CourseAssessmentCollection(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/course_assessment_collection/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}course_assessment_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, course):
         """
@@ -73,7 +74,7 @@ class CourseAssessmentCollection(Resource):
             item.add_control("profile", ASSESSMENT_PROFILE)
             body["items"].append(item)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", url_for('api.courseassessmentcollection', course=course))
         body.add_control_all_assessments()
         body.add_control_get_course(course)
@@ -89,7 +90,7 @@ class StudentAssessmentCollection(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/student_assessment_collection/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}student_assessment_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student):
         """Get the list of assessments from the database"""
@@ -104,7 +105,7 @@ class StudentAssessmentCollection(Resource):
             item.add_control("profile", ASSESSMENT_PROFILE)
             body["items"].append(item)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", url_for('api.studentassessmentcollection', student=student))
         body.add_control_all_assessments()
         body.add_control_get_student(student)
@@ -119,7 +120,7 @@ class AssessmentCollection(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/assessment_collection/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}assessment_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self):
         """Get the list of assessments from the database"""
@@ -134,7 +135,7 @@ class AssessmentCollection(Resource):
             item.add_control("profile", ASSESSMENT_PROFILE)
             body["items"].append(item)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", url_for('api.assessmentcollection'))
         body.add_control_add_assessment()
         body.add_control_all_students()
@@ -142,7 +143,7 @@ class AssessmentCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    @swag_from("/studentmanager/doc/assessment_collection/post.yml")
+    @swag_from(f"{DOC_FOLDER}assessment_collection/post.yml")
     @require_assessments_key
     def post(self):
         """
@@ -201,7 +202,7 @@ class StudentAssessmentItem(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/student_assessment_item/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}student_assessment_item/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student, course):
         """
@@ -217,7 +218,7 @@ class StudentAssessmentItem(Resource):
 
         self_url = url_for('api.studentassessmentitem', student=student, course=course)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", self_url)
         body.add_control("profile", ASSESSMENT_PROFILE)
         body.add_control("collection", url_for('api.studentassessmentcollection', student=student))
@@ -229,7 +230,7 @@ class StudentAssessmentItem(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    @swag_from("/studentmanager/doc/student_assessment_item/put.yml")
+    @swag_from(f"{DOC_FOLDER}student_assessment_item/put.yml")
     @require_assessments_key
     def put(self, student, course):
         """Edits the assessment's data.
@@ -275,7 +276,7 @@ class StudentAssessmentItem(Resource):
 
         return Response(status=204)
 
-    @swag_from("/studentmanager/doc/student_assessment_item/delete.yml")
+    @swag_from(f"{DOC_FOLDER}student_assessment_item/delete.yml")
     @require_assessments_key
     def delete(self, student, course):
         """
@@ -306,7 +307,7 @@ class CourseAssessmentItem(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/course_assessment_item/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}course_assessment_item/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student, course):
         """
@@ -323,7 +324,7 @@ class CourseAssessmentItem(Resource):
 
         self_url = url_for('api.courseassessmentitem', student=student, course=course)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", self_url)
         body.add_control("profile", ASSESSMENT_PROFILE)
         body.add_control("collection", url_for('api.courseassessmentcollection', course=course))
@@ -335,7 +336,7 @@ class CourseAssessmentItem(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    @swag_from("/studentmanager/doc/course_assessment_item/put.yml")
+    @swag_from(f"{DOC_FOLDER}course_assessment_item/put.yml")
     @require_assessments_key
     def put(self, student, course):
         """Edits the assessment's data.
@@ -377,7 +378,7 @@ class CourseAssessmentItem(Resource):
 
         return Response(status=204)
 
-    @swag_from("/studentmanager/doc/course_assessment_item/delete.yml")
+    @swag_from(f"{DOC_FOLDER}course_assessment_item/delete.yml")
     @require_assessments_key
     def delete(self, student, course):
         """

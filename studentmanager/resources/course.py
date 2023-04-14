@@ -18,7 +18,8 @@ from werkzeug.routing import BaseConverter
 from studentmanager import cache
 from studentmanager import db
 from studentmanager.builder import StudentManagerBuilder, create_error_response
-from studentmanager.constants import COURSE_PROFILE, LINK_RELATIONS_URL, MASON
+from studentmanager.constants \
+    import COURSE_PROFILE, LINK_RELATIONS_URL, MASON, NAMESPACE, DOC_FOLDER
 from studentmanager.models import Course, require_admin_key
 from studentmanager.utils import request_path_cache_key
 
@@ -30,7 +31,7 @@ class CourseCollection(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/course_collection/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}course_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self):
         """Get the list of courses from the database"""
@@ -43,7 +44,7 @@ class CourseCollection(Resource):
             item.add_control("profile", COURSE_PROFILE)
             body["items"].append(item)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", url_for('api.coursecollection'))
         body.add_control_add_course()
         body.add_control_all_students()
@@ -51,7 +52,7 @@ class CourseCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    @swag_from("/studentmanager/doc/course_collection/post.yml")
+    @swag_from(f"{DOC_FOLDER}course_collection/post.yml")
     @require_admin_key
     def post(self):
         """
@@ -107,7 +108,7 @@ class CourseItem(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/course_item/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}course_item/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, course):
         """
@@ -119,7 +120,7 @@ class CourseItem(Resource):
 
         self_url = url_for('api.courseitem', course=course)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", self_url)
         body.add_control("profile", COURSE_PROFILE)
         body.add_control_put("Modify a course", self_url, Course.json_schema())
@@ -130,7 +131,7 @@ class CourseItem(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    @swag_from("/studentmanager/doc/course_item/put.yml")
+    @swag_from(f"{DOC_FOLDER}course_item/put.yml")
     @require_admin_key
     def put(self, course):
         """
@@ -166,7 +167,7 @@ class CourseItem(Resource):
         self._clear_cache()
         return Response(status=204)
 
-    @swag_from("/studentmanager/doc/course_item/delete.yml")
+    @swag_from(f"{DOC_FOLDER}course_item/delete.yml")
     @require_admin_key
     def delete(self, course):
         """

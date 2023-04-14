@@ -8,14 +8,18 @@ import json
 
 from flask import url_for, request, Response
 
-from studentmanager.constants import ERROR_PROFILE, MASON
+from studentmanager.constants import ERROR_PROFILE, MASON, NAMESPACE
 from studentmanager.models import Student, Course, Assessment
 
 
-# Provided in Exercise 3 material on Lovelace
+# This class is taken directly from the Exercise 3 material on Lovelace at
+# https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/exercise-3-api-documentation-and-hypermedia/#subclass-solution
 
 class MasonBuilder(dict):
     """
+    This class is taken directly from the Exercise 3 material on Lovelace:
+    https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/exercise-3-api-documentation-and-hypermedia/#subclass-solution
+
     A convenience class for managing dictionaries that represent Mason
     objects. It provides nice shorthands for inserting some of the more
     elements into the object but mostly is just a parent for the much more
@@ -132,15 +136,21 @@ class MasonBuilder(dict):
         """
 
         self.add_control(
-            "studman:delete",
+            f"{NAMESPACE}:delete",
             href,
             method="DELETE",
             title=title,
         )
 
 
+# This class is built directly on top of the MasonBuilder class, provided in the Exercise 3
+#   material on Lovelace:
+#   https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/exercise-3-api-documentation-and-hypermedia/#subclass-solution
+
 class StudentManagerBuilder(MasonBuilder):
     """
+    This class is built directly on top of the MasonBuilder class, provided in the Exercise 3
+        material on Lovelace: https://lovelace.oulu.fi/ohjelmoitava-web/ohjelmoitava-web/exercise-3-api-documentation-and-hypermedia/#subclass-solution
     Extends MasonBuilder to expose utility control functions specific to our project.
     """
 
@@ -149,7 +159,7 @@ class StudentManagerBuilder(MasonBuilder):
         Adds a control that points to the collection of all students with GET method.
         """
         self.add_control(
-            "studman:students-all",
+            f"{NAMESPACE}:students-all",
             url_for('api.studentcollection'),
             method="GET",
             title="The collection of all students"
@@ -160,7 +170,7 @@ class StudentManagerBuilder(MasonBuilder):
         Adds a control that points to the collection of all courses with GET method.
         """
         self.add_control(
-            "studman:courses-all",
+            f"{NAMESPACE}:courses-all",
             url_for("api.coursecollection"),
             method="GET",
             title="The collection of all courses"
@@ -171,7 +181,7 @@ class StudentManagerBuilder(MasonBuilder):
         Adds a control that points to the collection of all assessments with GET method.
         """
         self.add_control(
-            "studman:assessments-all",
+            f"{NAMESPACE}:assessments-all",
             url_for('api.assessmentcollection'),
             method="GET",
             title="The collection of all assessments"
@@ -183,7 +193,7 @@ class StudentManagerBuilder(MasonBuilder):
         Contains the schema for a valid POST request of a student.
         """
         self.add_control_post(
-            "studman:add-student",
+            f"{NAMESPACE}:add-student",
             "Add a new student",
             url_for('api.studentcollection'),
             Student.json_schema()
@@ -195,7 +205,7 @@ class StudentManagerBuilder(MasonBuilder):
         Contains the schema for a valid POST request of a course.
         """
         self.add_control_post(
-            "studman:add-course",
+            f"{NAMESPACE}:add-course",
             "Add a new course",
             url_for('api.coursecollection'),
             Course.json_schema()
@@ -208,7 +218,7 @@ class StudentManagerBuilder(MasonBuilder):
         Contains the schema for a valid POST request of an assessment.
         """
         self.add_control_post(
-            "studman:add-assessment",
+            f"{NAMESPACE}:add-assessment",
             "Add a new assessment",
             url_for('api.assessmentcollection'),
             Assessment.json_schema()
@@ -220,7 +230,7 @@ class StudentManagerBuilder(MasonBuilder):
         :param student: database instance of the student for which to generate the URL.
         """
         self.add_control(
-            "studman:student",
+            f"{NAMESPACE}:student",
             url_for('api.studentitem', student=student),
             method="GET",
             title="Get the student this assessment is assigned to"
@@ -232,7 +242,7 @@ class StudentManagerBuilder(MasonBuilder):
         :param course: database instance of the course for which to generate the URL.
         """
         self.add_control(
-            "studman:course",
+            f"{NAMESPACE}:course",
             url_for('api.courseitem', course=course),
             method="GET",
             title="Get the course this assessment is assigned to"
@@ -244,7 +254,7 @@ class StudentManagerBuilder(MasonBuilder):
         :param student: database instance of the student for which to get the assessments.
         """
         self.add_control(
-            "studman:student-assessments",
+            f"{NAMESPACE}:student-assessments",
             url_for('api.studentassessmentcollection', student=student),
             method="GET",
             title="Get all the assessments of a student"
@@ -256,7 +266,7 @@ class StudentManagerBuilder(MasonBuilder):
         :param course: database instance of the course for which to get the assessments.
         """
         self.add_control(
-            "studman:course-assessments",
+            f"{NAMESPACE}:course-assessments",
             url_for('api.courseassessmentcollection', course=course),
             method="GET",
             title="Get all the assessments of a course"

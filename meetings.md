@@ -45,16 +45,20 @@ Revision and grading of the deliverable for Deadline 3, discussion about using d
 
 ## Meeting 4.
 
-* **DATE:**
-* **ASSISTANTS:**
+* **DATE: 14/04/2023**
+* **ASSISTANTS: Iván Sánchez Milara**
 
 ### Minutes
 
-*Summary of what was discussed during the meeting*
+Revision and grading of the deliverable for Deadline 4.
+Suggestions about refactoring namespace and docs directory path as constants to make possible future changes easier.
+Questions about implementation of Client and Auxiliary Service
 
 ### Action points
 
-*List here the actions points discussed with assistants*
+- Refactor the aforementioned fields
+- Add entrypoint in hypermedia diagram
+- Continue implementation of API consumers with new insight
 
 ## Midterm meeting
 
