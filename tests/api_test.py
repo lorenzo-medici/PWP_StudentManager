@@ -518,6 +518,7 @@ class TestStudentItem(object):
         _check_control_get_method("self", client, body)
         _check_control_get_method("profile", client, body)
         _check_control_get_method(f"{NAMESPACE}:student-assessments", client, body)
+        _check_control_get_method(f"{NAMESPACE}:propic", client, body)
         _check_control_put_method("edit", client, body, _get_existing_student_json(), "student_id")
         _check_control_delete_method(f"{NAMESPACE}:delete", client, body)
         _check_control_get_method("collection", client, body)
@@ -973,3 +974,24 @@ def _get_existing_assessment_json():
         "grade": 5,
         "date": '1993-02-08'
     }
+
+
+class TestProfilePictureItem(object):
+    RESOURCE_URL = "/api/students/1/profilePicture/"
+    INVALID_URL = "/api/students/X/profilePicture/"
+
+    def test_get(self, client):
+        """Successfully gets a student's profile picture"""
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("profile", client, body)
+        _check_control_get_method(f"{NAMESPACE}:student", client, body)
+        assert "picture" in body
+
+    def test_get_invalid_url(self, client):
+        """Tries to get a non existent course"""
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404

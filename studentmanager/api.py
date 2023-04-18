@@ -9,6 +9,7 @@ from studentmanager.resources.assessment import \
     CourseAssessmentCollection, StudentAssessmentCollection, \
     CourseAssessmentItem, StudentAssessmentItem, AssessmentCollection
 from studentmanager.resources.course import CourseCollection, CourseItem
+from studentmanager.resources.profile_pictures import ProfilePictureItem
 from studentmanager.resources.student import StudentCollection, StudentItem
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -19,6 +20,8 @@ api.add_resource(CourseItem, "/courses/<course:course>/")
 
 api.add_resource(StudentCollection, "/students/")
 api.add_resource(StudentItem, "/students/<student:student>/")
+
+api.add_resource(ProfilePictureItem, "/students/<student:student>/profilePicture/")
 
 api.add_resource(AssessmentCollection, "/assessments/")
 api.add_resource(StudentAssessmentCollection,

@@ -6,7 +6,7 @@
     <li><b>self</b>: carried by all resources returned by the API. Points to the resource itself. It is also carried by
         all Items in Collections, pointing at the related resource.
     </li>
-    <li><b>proflie</b>: points to the related proflie of the current resource.</li>
+    <li><b>profile</b>: points to the related proflie of the current resource.</li>
     <li><b>collection</b>: carried by Item resources, points to the related Collection.</li>
     <li><b>edit</b>: carried by Item resources, points to itself, specifying PUT method and the appropriate JSON schema
         to use for the request
@@ -29,7 +29,9 @@ All the following relations are defined in the 'studman' namespace, prepended to
     </li>
     <li><b>student, course</b>: each AssessmentItem wlil point to its related Student and Course through these links. In
         addition, StudentAssessmentCollection (and CourseAssessmentCollection) resources wlil point to the related
-        StudentItem (and CourseItem).
+        StudentItem (and CourseItem). (The student link is also used from the ProfilePictureItem to the corresponding
+        StudentIten)
     </li>
     <li><b>delete</b>: a utliity link carried by every Item resource pointing itself, specyfing DELETE method.</li>
+    <li><b>propic</b>: a link from a StudentItem to the corresponding ProfilePictureItem.</li>
 </ul>

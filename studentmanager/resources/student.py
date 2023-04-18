@@ -134,6 +134,7 @@ class StudentItem(Resource):
         body.add_control("collection", url_for('api.studentcollection'))
         body.add_control_all_assessments()
         body.add_control_student_assessments(student)
+        body.add_control(f"{NAMESPACE}:propic", self_url + "profilePicture/")
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 

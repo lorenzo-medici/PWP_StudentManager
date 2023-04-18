@@ -16,6 +16,8 @@ It holds the following attributes:
     </li>
 </ul>
 All attributes are mandatory when adding or modyfing a student. A complete JSON schema for tudents can be obtained from the Student.json_schema method, or by the hypermedia controls related to adding or modyfing students.
+<br/><br/>
+Each student also has a profile picture, that can be reached at the URL contained in the "studman:propic" hypermedia control.
 
 <h2>Endpoints</h2>
 
@@ -26,6 +28,8 @@ All students are stored in the StudentCollection resource (/api/students/). This
 Individual students can be accessed from the StudentItem resource (/api/students/&lt;student_id&gt;/). This resource allows editing and deletion of an individual student.
 <br/>
 It also allows access to the student's assessment collection (/api/students/&lt;student_id&gt;/assessments/).
+<br/><br/>
+A prototype ProfilePictureItem is also implemented. It will display the user's profile picture (the same for all students for now) and expose hypermedia controls to return to the StudentItem resource.
 
 <h2>Relevant link relations</h2>
 
@@ -47,8 +51,12 @@ It also allows access to the student's assessment collection (/api/students/&lt;
         respectively.
     </li>
     <li><b>studman:student</b>: carried by the StudentAssessmentCollection resource, points to the relevant Student.
+        (Also carried by the ProfilePictureItem resource, points to the relevant Student).
     </li>
     <li><b>studman:student-assessments</b>: inverse of the previous control, carried by a StudentItem, points to the
         relevant StudentAssessmentCollection.
+    </li>
+    <li><b>studman:propic</b>: this link points from the StudentItem endpoint to the corresponding ProfilePictureItem
+        URL
     </li>
 </ul>

@@ -14,3 +14,6 @@ LINK_RELATIONS_URL = "/studentmanager/link-relations/"
 NAMESPACE = "studman"
 
 DOC_FOLDER = "/studentmanager/doc/"
+
+PICTURE_FOLDER = "/studentmanager/static/pictures/"
+PROFILE_PICTURE_MIMETYPE = "application/vnd.mason+jpeg"
