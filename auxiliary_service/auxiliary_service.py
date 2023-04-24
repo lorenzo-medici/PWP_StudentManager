@@ -4,7 +4,6 @@ import sys
 
 import requests
 from flask import Flask, Response
-from urllib3.exceptions import NewConnectionError
 
 app = Flask(__name__)
 server_url = ''
@@ -73,12 +72,10 @@ def student_card_generator(student_id):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 3:
         print(f"Invalid number of arguments. \
-        Usage: python {os.path.basename(__file__)} <port> <apiAddress> <apiPort>")
+        Usage: python {os.path.basename(__file__)} <port> <apiUrl>")
         exit(-1)
-
-    print(sys.argv)
 
     try:
         port = int(sys.argv[1])
@@ -86,12 +83,7 @@ if __name__ == '__main__':
             print("Local port not in valid range [1024, 49151]!")
             exit(-1)
 
-        serverPort = int(sys.argv[3])
-        if serverPort < 1024 or serverPort > 49151:
-            print("Server port not in valid range [1024, 49151]!")
-            exit(-1)
-
-        server_url = f"http://{sys.argv[2]}:{serverPort}"
+        server_url = sys.argv[2]
         api_entrypoint = requests.get(server_url + '/api/')
 
         if api_entrypoint.status_code != 200:
@@ -106,6 +98,6 @@ if __name__ == '__main__':
         print(f"Invaid port paramter: not an integer!{e.with_traceback()}")
         exit(-1)
 
-    except NewConnectionError:
-        print(f'Invalid URL: {server_url}')
+    except requests.ConnectionError:
+        print(f'URL does not point to the StudentManager API: {server_url}')
         exit(-2)
