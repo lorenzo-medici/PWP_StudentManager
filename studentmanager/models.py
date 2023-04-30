@@ -133,20 +133,20 @@ class Assessment(db.Model):
         props = schema["properties"] = {}
         props["course_id"] = {
             "description": "Course identifier that this assessment belongs to",
-            "type": "number",
+            "type": "integer",
         }
         props["student_id"] = {
             "description": "Student identifier that this assessment belongs to",
-            "type": "number",
+            "type": "integer",
         }
         props["grade"] = {
             "description": "Achieved grade on this assessment",
-            "type": "number"
+            "type": "integer"
         }
         props["date"] = {
             "description": "Date of assessment marking in format yyyy-mm-dd",
             "type": "string",
-            "format": "date-time"
+            "format": "date"
         }
         return schema
 
@@ -274,7 +274,7 @@ class Student(db.Model):
         props["date_of_birth"] = {
             "description": "Student birth date in the format yyyy-mm-dd",
             "type": "string",
-            "format": "date-time"
+            "format": "date"
         }
         return schema
 
@@ -370,7 +370,7 @@ class Course(db.Model):
         }
         props["ects"] = {
             "description": "Number of ECTS granted by the course",
-            "type": "number",
+            "type": "integer",
         }
 
         return schema

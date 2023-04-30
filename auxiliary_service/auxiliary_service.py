@@ -96,7 +96,7 @@ def student_card_generator(student_id):
 
     # then on the client side, you simply need to do
     # resp = requests.get(f'{auxiliary_server_url}/studentCard/{student_id}/', timeout=GET_TIMEOUT)
-    # student_card_image = Image.open(BytesIO(base64.b64decode(resp.content)))
+    # student_card_image = Image.open(BytesIO(resp.content))
     #
     # Then you can do student_card_image.show() to open a window with the picture in it
     #   or student_card_image.save(<path>, 'JPEG', quality=100) to save it to a file
@@ -104,7 +104,7 @@ def student_card_generator(student_id):
     # You can do the same thing for the profile picture image that you get from the API
     # The only thing that you need to change is
     # picture_body = picture_page.json()
-    # and use picture_body["picture"] instead of resp.content
+    # and use base64.b64decode(picture_body["picture"]) instead of resp.content
     # If you need help ask Lorenzo
 
 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
         app.run(host="localhost", port=PORT)
 
     except ValueError as e:
-        print(f"Invaid PORT paramter: not an integer!{e.with_traceback()}")
+        print(f"Invaid PORT parameter: not an integer!{e}")
         sys.exit(-1)
 
     except requests.ConnectionError:

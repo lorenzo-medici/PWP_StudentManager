@@ -27,7 +27,7 @@ components:
           type: string
         ects:
           description: Number of ECTS granted by the course
-          type: number
+          type: integer
         teacher:
           description: Teacher responsible for the course
           type: string
@@ -44,7 +44,7 @@ components:
       properties:
         date_of_birth:
           description: Student birth date in the format yyyy-mm-dd
-          format: date-time
+          format: date
           type: string
         first_name:
           description: Student first name
@@ -65,17 +65,17 @@ components:
       properties:
         course_id:
           description: Course identifier that this assessment belongs to
-          type: number
+          type: integer
         date:
           description: Date of assessment marking in format yyyy-mm-dd
-          format: date-time
+          format: date
           type: string
         grade:
           description: Achieved grade on this assessment
-          type: number
+          type: integer
         student_id:
           description: Student identifier that this assessment belongs to
-          type: number
+          type: integer
       required:
         - course_id
         - student_id
