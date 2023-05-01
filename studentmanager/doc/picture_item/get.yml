@@ -1,0 +1,21 @@
+description: Gets the profile picture of a single student
+parameters:
+  - $ref: '#/components/parameters/student'
+responses:
+  '200':
+    content:
+      application/vnd.mason+jpeg:
+        example:
+          '@controls':
+            profile:
+              href: /profiles/student/
+            self:
+              href: /api/students/1/profilePicture/
+            studman:student:
+              href: /api/students/1/
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/
+          picture: <picture binary data in jpeg format>
+  '404':
+    description: student not found

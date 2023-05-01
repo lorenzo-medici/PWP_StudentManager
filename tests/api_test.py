@@ -12,6 +12,7 @@ from jsonschema.validators import validate
 from werkzeug.datastructures import Headers
 
 from studentmanager import create_app, db
+from studentmanager.constants import NAMESPACE
 from studentmanager.models import Assessment, Student, Course, ApiKey
 
 TEST_KEY = "verysafetestkey"
@@ -24,7 +25,7 @@ def _check_namespace(client, response):
     that its "name" attribute is a URL that can be accessed.
     """
 
-    ns_href = response["@namespaces"]["studman"]["name"]
+    ns_href = response["@namespaces"][f"{NAMESPACE}"]["name"]
     resp = client.get(ns_href)
     assert resp.status_code == 200
 
@@ -270,9 +271,9 @@ class TestEntrypoint(object):
         assert resp.status_code == 200
         body = json.loads(resp.data)
         _check_namespace(client, body)
-        _check_control_get_method("studman:students-all", client, body)
-        _check_control_get_method("studman:courses-all", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:students-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:courses-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
 
 
 class TestCourseCollection(object):
@@ -284,10 +285,10 @@ class TestCourseCollection(object):
         assert resp.status_code == 200
         body = json.loads(resp.data)
         _check_namespace(client, body)
-        _check_control_post_method("studman:add-course", client, body, _get_course_json())
-        _check_control_get_method("studman:students-all", client, body)
+        _check_control_post_method(f"{NAMESPACE}:add-course", client, body, _get_course_json())
+        _check_control_get_method(f"{NAMESPACE}:students-all", client, body)
         _check_control_get_method("self", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
         assert len(body["items"]) == 3
         for item in body["items"]:
             assert "title" in item
@@ -352,11 +353,11 @@ class TestCourseItem(object):
         _check_namespace(client, body)
         _check_control_get_method("self", client, body)
         _check_control_get_method("profile", client, body)
-        _check_control_get_method("studman:course-assessments", client, body)
+        _check_control_get_method(f"{NAMESPACE}:course-assessments", client, body)
         _check_control_put_method("edit", client, body, _get_existing_course_json(), "code")
-        _check_control_delete_method("studman:delete", client, body)
+        _check_control_delete_method(f"{NAMESPACE}:delete", client, body)
         _check_control_get_method("collection", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
         assert "course_id" in body
         assert body["title"] == 'Transfiguration'
         assert body["teacher"] == 'Minerva Mcgonagall'
@@ -453,10 +454,10 @@ class TestStudentCollection(object):
         assert resp.status_code == 200
         body = json.loads(resp.data)
         _check_namespace(client, body)
-        _check_control_post_method("studman:add-student", client, body, _get_student_json())
-        _check_control_get_method("studman:courses-all", client, body)
+        _check_control_post_method(f"{NAMESPACE}:add-student", client, body, _get_student_json())
+        _check_control_get_method(f"{NAMESPACE}:courses-all", client, body)
         _check_control_get_method("self", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
         assert len(body["items"]) == 3
         for item in body["items"]:
             assert "student_id" in item
@@ -516,11 +517,12 @@ class TestStudentItem(object):
         _check_namespace(client, body)
         _check_control_get_method("self", client, body)
         _check_control_get_method("profile", client, body)
-        _check_control_get_method("studman:student-assessments", client, body)
+        _check_control_get_method(f"{NAMESPACE}:student-assessments", client, body)
+        _check_control_get_method(f"{NAMESPACE}:propic", client, body)
         _check_control_put_method("edit", client, body, _get_existing_student_json(), "student_id")
-        _check_control_delete_method("studman:delete", client, body)
+        _check_control_delete_method(f"{NAMESPACE}:delete", client, body)
         _check_control_get_method("collection", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
         assert body["first_name"] == 'Draco'
         assert body["last_name"] == 'Malfoy'
         assert body["date_of_birth"] == '1980-06-05'
@@ -620,9 +622,9 @@ class TestAssessmentCollection(object):
         body = json.loads(resp.data)
         _check_namespace(client, body)
         _check_control_get_method("self", client, body)
-        _check_control_post_method("studman:add-assessment", client, body, _get_assessment_json(client))
-        _check_control_get_method("studman:students-all", client, body)
-        _check_control_get_method("studman:courses-all", client, body)
+        _check_control_post_method(f"{NAMESPACE}:add-assessment", client, body, _get_assessment_json(client))
+        _check_control_get_method(f"{NAMESPACE}:students-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:courses-all", client, body)
         assert len(body["items"]) == 6
         for item in body["items"]:
             assert "course_id" in item
@@ -641,8 +643,8 @@ class TestAssessmentCollection(object):
         body = json.loads(resp.data)
         _check_namespace(client, body)
         _check_control_get_method("self", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
-        _check_control_get_method("studman:course", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:course", client, body)
         assert len(body["items"]) == 3
         for item in body["items"]:
             assert "course_id" in item
@@ -661,8 +663,8 @@ class TestAssessmentCollection(object):
         body = json.loads(resp.data)
         _check_namespace(client, body)
         _check_control_get_method("self", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
-        _check_control_get_method("studman:student", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
+        _check_control_get_method(f"{NAMESPACE}:student", client, body)
         assert len(body["items"]) == 2
         for item in body["items"]:
             assert "course_id" in item
@@ -754,10 +756,10 @@ class TestAssessmentItem(object):
         _check_control_get_method("self", client, body)
         _check_control_get_method("collection", client, body)
         _check_control_put_method("edit", client, body, _get_existing_assessment_json(), "course_id")
-        _check_control_delete_method("studman:delete", client, body)
-        _check_control_get_method("studman:student", client, body)
-        _check_control_get_method("studman:course", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_delete_method(f"{NAMESPACE}:delete", client, body)
+        _check_control_get_method(f"{NAMESPACE}:student", client, body)
+        _check_control_get_method(f"{NAMESPACE}:course", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
         assert body["course_id"] == 1
         assert body["student_id"] == 1
         assert body["grade"] == 5
@@ -774,10 +776,10 @@ class TestAssessmentItem(object):
         _check_control_get_method("self", client, body)
         _check_control_get_method("collection", client, body)
         _check_control_put_method("edit", client, body, _get_existing_assessment_json(), "course_id")
-        _check_control_delete_method("studman:delete", client, body)
-        _check_control_get_method("studman:student", client, body)
-        _check_control_get_method("studman:course", client, body)
-        _check_control_get_method("studman:assessments-all", client, body)
+        _check_control_delete_method(f"{NAMESPACE}:delete", client, body)
+        _check_control_get_method(f"{NAMESPACE}:student", client, body)
+        _check_control_get_method(f"{NAMESPACE}:course", client, body)
+        _check_control_get_method(f"{NAMESPACE}:assessments-all", client, body)
         assert body["course_id"] == 1
         assert body["student_id"] == 1
         assert body["grade"] == 5
@@ -972,3 +974,24 @@ def _get_existing_assessment_json():
         "grade": 5,
         "date": '1993-02-08'
     }
+
+
+class TestProfilePictureItem(object):
+    RESOURCE_URL = "/api/students/1/profilePicture/"
+    INVALID_URL = "/api/students/X/profilePicture/"
+
+    def test_get(self, client):
+        """Successfully gets a student's profile picture"""
+        resp = client.get(self.RESOURCE_URL)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        _check_namespace(client, body)
+        _check_control_get_method("self", client, body)
+        _check_control_get_method("profile", client, body)
+        _check_control_get_method(f"{NAMESPACE}:student", client, body)
+        assert "picture" in body
+
+    def test_get_invalid_url(self, client):
+        """Tries to get a non existent course"""
+        resp = client.get(self.INVALID_URL)
+        assert resp.status_code == 404

@@ -1,0 +1,21 @@
+responses:
+  '200':
+    content:
+      application/vnd.mason+json:
+        example:
+          '@controls':
+            studman:assessments-all:
+              href: /api/assessments/
+              method: GET
+              title: The collection of all assessments
+            studman:courses-all:
+              href: /api/courses/
+              method: GET
+              title: The collection of all courses
+            studman:students-all:
+              href: /api/students/
+              method: GET
+              title: The collection of all students
+          '@namespaces':
+            studman:
+              name: /studentmanager/link-relations/

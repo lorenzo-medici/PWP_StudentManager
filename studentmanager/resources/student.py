@@ -19,7 +19,8 @@ from werkzeug.routing import BaseConverter
 from studentmanager import cache
 from studentmanager import db
 from studentmanager.builder import StudentManagerBuilder, create_error_response
-from studentmanager.constants import STUDENT_PROFILE, MASON, LINK_RELATIONS_URL
+from studentmanager.constants \
+    import STUDENT_PROFILE, MASON, LINK_RELATIONS_URL, NAMESPACE, DOC_FOLDER
 from studentmanager.models import Student, require_admin_key
 from studentmanager.utils import request_path_cache_key
 
@@ -31,7 +32,7 @@ class StudentCollection(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/student_collection/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}student_collection/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self):
         """
@@ -46,7 +47,7 @@ class StudentCollection(Resource):
             item.add_control("profile", STUDENT_PROFILE)
             body["items"].append(item)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", url_for('api.studentcollection'))
         body.add_control_add_student()
         body.add_control_all_courses()
@@ -54,7 +55,7 @@ class StudentCollection(Resource):
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    @swag_from("/studentmanager/doc/student_collection/post.yml")
+    @swag_from(f"{DOC_FOLDER}student_collection/post.yml")
     @require_admin_key
     def post(self):
         """
@@ -79,9 +80,6 @@ class StudentCollection(Resource):
             db.session.commit()
         except ValidationError:
             return create_error_response(400, 'Bad Request', "Invalid request format")
-
-        except ValueError:
-            return create_error_response(400, 'Bad Request', 'Date_of_birth not in iso format')
 
         except IntegrityError:
             db.session.rollback()
@@ -113,7 +111,7 @@ class StudentItem(Resource):
 
     # must explicitly specify current working directory because otherwise
     # it will look in in cache dir
-    @swag_from(os.getcwd() + "/studentmanager/doc/student_item/get.yml")
+    @swag_from(os.getcwd() + f"{DOC_FOLDER}student_item/get.yml")
     @cache.cached(timeout=None, make_cache_key=request_path_cache_key)
     def get(self, student):
         """
@@ -125,7 +123,7 @@ class StudentItem(Resource):
 
         self_url = url_for('api.studentitem', student=student)
 
-        body.add_namespace("studman", LINK_RELATIONS_URL)
+        body.add_namespace(NAMESPACE, LINK_RELATIONS_URL)
         body.add_control("self", self_url)
         body.add_control("profile", STUDENT_PROFILE)
         body.add_control_put("Modify a student", self_url, Student.json_schema())
@@ -133,10 +131,11 @@ class StudentItem(Resource):
         body.add_control("collection", url_for('api.studentcollection'))
         body.add_control_all_assessments()
         body.add_control_student_assessments(student)
+        body.add_control(f"{NAMESPACE}:propic", self_url + "profilePicture/")
 
         return Response(json.dumps(body), 200, mimetype=MASON)
 
-    @swag_from("/studentmanager/doc/student_item/put.yml")
+    @swag_from(f"{DOC_FOLDER}student_item/put.yml")
     @require_admin_key
     def put(self, student):
         """
@@ -161,9 +160,6 @@ class StudentItem(Resource):
         except ValidationError:
             return create_error_response(400, 'Bad Request', "Invalid request format")
 
-        except ValueError:
-            return create_error_response(400, 'Bad Request', 'Date_of_birth not in iso format')
-
         except IntegrityError:
             db.session.rollback()
             return create_error_response(
@@ -175,7 +171,7 @@ class StudentItem(Resource):
         self._clear_cache()
         return Response(status=204)
 
-    @swag_from("/studentmanager/doc/student_item/delete.yml")
+    @swag_from(f"{DOC_FOLDER}student_item/delete.yml")
     @require_admin_key
     def delete(self, student):
         """
