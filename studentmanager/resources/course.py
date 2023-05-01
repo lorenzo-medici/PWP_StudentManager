@@ -72,9 +72,6 @@ class CourseCollection(Resource):
         course = Course()
         course.deserialize(request.json)
 
-        if not isinstance(course.ects, int):
-            return "Ects value must be an integer", 400
-
         try:
             db.session.add(course)
             db.session.commit()
@@ -150,9 +147,6 @@ class CourseItem(Resource):
             return create_error_response(400, 'Bad Request', "Invalid request format")
 
         course.deserialize(request.json)
-
-        if not isinstance(course.ects, int):
-            return create_error_response(400, 'Bad Request', 'Ects must be an integer')
 
         try:
             db.session.add(course)

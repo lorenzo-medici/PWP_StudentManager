@@ -81,9 +81,6 @@ class StudentCollection(Resource):
         except ValidationError:
             return create_error_response(400, 'Bad Request', "Invalid request format")
 
-        except ValueError:
-            return create_error_response(400, 'Bad Request', 'Date_of_birth not in iso format')
-
         except IntegrityError:
             db.session.rollback()
             return create_error_response(
@@ -162,9 +159,6 @@ class StudentItem(Resource):
             db.session.commit()
         except ValidationError:
             return create_error_response(400, 'Bad Request', "Invalid request format")
-
-        except ValueError:
-            return create_error_response(400, 'Bad Request', 'Date_of_birth not in iso format')
 
         except IntegrityError:
             db.session.rollback()

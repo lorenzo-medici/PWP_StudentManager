@@ -1,5 +1,9 @@
+"""
+Constants used in the API client
+"""
+
 API_URL = "http://127.0.0.1:5000/"
-API_KEY = "tjCctAulQwtFjhucT-fIkESkEe-5JvdDPH2ezYOIQ3c"
+API_KEY = "mV2wfPsXdM5OiZUjONc1-eNbyrVCWxKOc6XKgaC_F_w"
 
 AUXILIARY_SERVICE_URL = 'http://127.0.0.1:5001'
 

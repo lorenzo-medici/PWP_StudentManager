@@ -29,12 +29,11 @@ class APIError(Exception):
         a string.
         """
         try:
-            value = "Error {code} while accessing {uri}: {msg}\nDetails:\n{msgs}".format(
-                code=self.code,
-                uri=self.error["resource_url"],
-                msg=self.error["@error"]["@message"],
-                msgs="\n".join(self.error["@error"]["@messages"])
-            )
+            msgs = "\n".join(self.error["@error"]["@messages"])
+            value = f'Error {self.code} while accessing {self.url}: ' \
+                    f'{self.error["@error"]["@message"]}\n' \
+                    f'Details:\n' \
+                    f'{msgs}'
         except KeyError:
             value = f'Error {self.code} while accessing {self.url}: {self.error["message"]}'
 

@@ -160,9 +160,6 @@ class AssessmentCollection(Resource):
 
             assessment.deserialize(request.json)
 
-            if not isinstance(assessment.grade, int):
-                return create_error_response(400, 'Bad Request', 'Grade value must be an integer')
-
         except ValidationError:
             return create_error_response(400, 'Bad Request', 'JSON format is not valid')
 
@@ -250,9 +247,6 @@ class StudentAssessmentItem(Resource):
             validate(request.json, Assessment.json_schema())
 
             assessment.deserialize(request.json)
-
-            if not isinstance(assessment.grade, int):
-                return create_error_response(400, "Bad Request", 'Grade value must be an integer')
 
         except ValidationError:
             return create_error_response(400, 'Bad Request', 'JSON format is not valid')
@@ -356,9 +350,6 @@ class CourseAssessmentItem(Resource):
             validate(request.json, Assessment.json_schema())
 
             assessment.deserialize(request.json)
-
-            if not isinstance(assessment.grade, int):
-                return create_error_response(400, "Bad Request", 'Grade value must be an integer')
 
         except ValidationError:
             return create_error_response(400, 'Bad Request', 'JSON format is not valid')

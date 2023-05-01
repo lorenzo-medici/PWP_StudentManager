@@ -70,7 +70,7 @@ def student_card_generator(student_id):
     propic_bytes = BytesIO(base64.b64decode(picture_page.json()["picture"]))
 
     # Compose student card
-    final_image = Image.open('static/Background.png')
+    final_image = Image.open('static/Background.jpeg')
 
     final_image.paste(Image.open(propic_bytes), (50, 50))
 
@@ -89,23 +89,10 @@ def student_card_generator(student_id):
     # for returning, export the student card image as jpeg into the payload variable
     #   (it must contain the data you would directly write to a file), then simply return
     payload = BytesIO()
-    final_image.save(payload, 'JPEG', quality=100)
+    final_image.save(payload, 'JPEG')
     payload.seek(0)
 
     return Response(payload, 200, mimetype='image/jpeg')
-
-    # then on the client side, you simply need to do
-    # resp = requests.get(f'{auxiliary_server_url}/studentCard/{student_id}/', timeout=GET_TIMEOUT)
-    # student_card_image = Image.open(BytesIO(resp.content))
-    #
-    # Then you can do student_card_image.show() to open a window with the picture in it
-    #   or student_card_image.save(<path>, 'JPEG', quality=100) to save it to a file
-
-    # You can do the same thing for the profile picture image that you get from the API
-    # The only thing that you need to change is
-    # picture_body = picture_page.json()
-    # and use base64.b64decode(picture_body["picture"]) instead of resp.content
-    # If you need help ask Lorenzo
 
 
 if __name__ == '__main__':
